@@ -1,0 +1,228 @@
+/* ================================================
+   CourseFilter.css — Equilibrio Pinamar Brand
+   Layout: horizontal bar
+   ================================================ */
+
+  .course-filter {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    flex-wrap: wrap;
+    padding: 0.15rem 1.25rem; /* controlamos ancho acá */
+    background: transparent;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  
+  /* Hide default header */
+  .filter-header { display: none; }
+  
+  /* Cada grupo ocupa su espacio en la fila */
+  .filter-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.75rem;
+    flex-shrink: 0;
+  }
+  
+  /* Separador entre grupos */
+  .filter-group + .filter-group {
+    border-left: 1px solid rgba(185,137,103,0.22);
+  }
+  
+  /* Label inline */
+  .filter-group > label {
+    font-family: var(--font-display, 'Glacial Indifference', sans-serif);
+    font-size: 0.62rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted, rgba(90,60,42,0.52));
+    white-space: nowrap;
+    margin-bottom: 0;
+  }
+  
+  /* Select compacto */
+  .filter-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0.32rem 1.75rem 0.32rem 0.7rem;
+    border: 1px solid var(--border-mid, rgba(185,137,103,0.38));
+    border-radius: var(--r-pill, 999px);
+    font-family: var(--font-body, 'Open Sans', sans-serif);
+    font-size: 0.82rem;
+    color: var(--text-primary, #5a3c2a);
+    background-color: var(--bg-surface, #ead5c7);
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23b98967' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.65rem center;
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    white-space: nowrap;
+  }
+  .filter-group select:focus {
+    outline: none;
+    border-color: var(--tan, #b98967);
+    box-shadow: 0 0 0 3px rgba(185,137,103,0.12);
+  }
+  .filter-group select option {
+    background: #fff;
+    color: #1e1b18;
+  }
+  
+  /* Precio: dos inputs juntos */
+  .filter-group.price-group {
+    gap: 0.25rem;
+  }
+  .price-sep {
+    font-size: 0.72rem;
+    color: var(--text-muted, rgba(90,60,42,0.52));
+  }
+  .filter-group input[type='number'] {
+    width: 70px;
+    padding: 0.32rem 0.55rem;
+    border: 1px solid var(--border-mid, rgba(185,137,103,0.38));
+    border-radius: var(--r-sm, 6px);
+    font-family: var(--font-body, 'Open Sans', sans-serif);
+    font-size: 0.82rem;
+    color: var(--text-primary, #5a3c2a);
+    background: var(--bg-surface, #ead5c7);
+    transition: border-color 0.18s;
+    -moz-appearance: textfield;
+  }
+  .filter-group input[type='number']::-webkit-inner-spin-button,
+  .filter-group input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .filter-group input[type='number']:focus {
+    outline: none;
+    border-color: var(--tan, #b98967);
+  }
+  .filter-group input[type='number']::placeholder { color: var(--text-muted, rgba(90,60,42,0.52)); }
+  
+  /* Checkbox destacados — como chip toggle */
+  .filter-group-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.75rem;
+    margin: 0 0 0 0.5rem;
+    background: rgba(234,213,199,0.7);
+    border: 1px solid rgba(185,137,103,0.34);
+    border-radius: var(--r-pill, 999px);
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .filter-group-checkbox:hover {
+    border-color: var(--tan, #b98967);
+    background: rgba(228,211,197,0.7);
+  }
+  .filter-group-checkbox:has(input:checked) {
+    background: var(--tan-dim, rgba(185,137,103,0.14));
+    border-color: var(--tan, #b98967);
+  }
+  
+  .filter-group-checkbox input[type='checkbox'] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--border-strong, rgba(185,137,103,0.5));
+    border-radius: 4px;
+    background: var(--white, #fff);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.18s;
+    position: relative;
+  }
+  .filter-group-checkbox input[type='checkbox']:checked {
+    background: var(--tan, #b98967);
+    border-color: var(--tan, #b98967);
+  }
+  .filter-group-checkbox input[type='checkbox']:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 5px; height: 8px;
+    border: 2px solid white;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+  
+  .filter-group-checkbox label {
+    font-family: var(--font-body, 'Open Sans', sans-serif);
+    font-size: 0.82rem;
+    color: var(--text-secondary, rgba(90,60,42,0.78));
+    cursor: pointer;
+    margin-bottom: 0;
+    white-space: nowrap;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  
+  /* Botón limpiar — al final de la fila */
+  .course-filter .btn-secondary,
+  .course-filter button[class*='secondary'] {
+    padding: 0.3rem 0.9rem;
+    background: var(--bg-surface, #ead5c7);
+    border: 1px solid rgba(185,137,103,0.32);
+    border-radius: var(--r-pill, 999px);
+    color: var(--text-secondary, rgba(90,60,42,0.78));
+    font-family: var(--font-body, 'Open Sans', sans-serif);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, color 0.18s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 0.75rem;
+  }
+  .course-filter .btn-secondary:hover,
+  .course-filter button[class*='secondary']:hover {
+    background: var(--tan, #b98967);
+    border-color: var(--tan, #b98967);
+    color: var(--white, #fff);
+  }
+  
+  /* ─── Responsive ─────────────────────────────────── */
+  @media (max-width: 768px) {
+    .course-filter {
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      gap: 0.3rem;
+      overflow: visible;
+      flex-wrap: nowrap;
+      padding-bottom: 0.15rem;
+    }
+    .course-filter::-webkit-scrollbar { display: none; }
+
+    .filter-group {
+      width: 100%;
+      justify-content: space-between;
+      padding: 0.15rem 0.5rem;
+      border-left: none;
+    }
+
+    .filter-group.price-group {
+      justify-content: space-between;
+    }
+
+    .filter-group input[type='number'] {
+      width: 70px;
+    }
+
+    .filter-group-checkbox {
+      margin: 0.1rem 0 0.2rem 0;
+    }
+
+    .course-filter .btn-secondary,
+    .course-filter button[class*='secondary'] {
+      margin-left: 0;
+      margin-top: 0.1rem;
+    }
+  }

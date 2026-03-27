@@ -1,0 +1,53 @@
+/* ================================================
+   AuthForms.css — Equilibrio Pinamar Brand
+   ================================================ */
+
+/* El .auth-form ahora es solo el <form> interno,
+   sin card propia — vive dentro de auth-form-container */
+   .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+  }
+  
+  /* El h2 del form es redundante con form-title del padre,
+     pero lo dejamos oculto por si algún caso lo muestra solo */
+  .auth-form h2 {
+    display: none;
+  }
+  
+  /* Error global */
+  .error-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    background: #fdf0ee;
+    color: #8b2d2d;
+    padding: 0.9rem 1.1rem;
+    border-radius: var(--radius-md, 14px);
+    border-left: 3px solid #c0392b;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+  }
+  
+  /* Grid de dos columnas (nombre + apellido) */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  
+  /* auth-link dentro del form — ocultamos,
+     el padre Login/Register ya tiene su footer-link */
+  .auth-link {
+    display: none;
+  }
+  
+  @media (max-width: 640px) {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }

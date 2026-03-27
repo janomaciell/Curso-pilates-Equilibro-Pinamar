@@ -1,0 +1,99 @@
+/* ================================================
+   Button.css — Equilibrio Pinamar Brand
+   ================================================ */
+
+   .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-display, 'Glacial Indifference', 'Gill Sans', sans-serif);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: var(--radius-pill, 999px);
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease, opacity 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  
+  /* ── Variants ───────────────────────────────── */
+  
+  .btn-primary {
+    background: var(--ink, #1e1b18);
+    color: var(--white, #fff);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--tan, #b98967);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(185, 137, 103, 0.35);
+  }
+  
+  .btn-secondary {
+    background: var(--linen, #e4d3c5);
+    color: var(--ink-soft, #3d3732);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--blush, #e7c9c4);
+  }
+  
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--border-strong, rgba(185,137,103,0.38));
+    color: var(--tan, #b98967);
+  }
+  .btn-outline:hover:not(:disabled) {
+    background: var(--tan, #b98967);
+    border-color: var(--tan, #b98967);
+    color: var(--white, #fff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(185, 137, 103, 0.3);
+  }
+  
+  .btn-danger {
+    background: #c0392b;
+    color: var(--white, #fff);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: #a93226;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+  }
+  
+  /* ── Sizes ──────────────────────────────────── */
+  
+  .btn-small {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.75rem;
+  }
+  
+  .btn-medium {
+    padding: 0.85rem 1.75rem;
+    font-size: 0.82rem;
+  }
+  
+  .btn-large {
+    padding: 1.05rem 2.25rem;
+    font-size: 0.88rem;
+  }
+  
+  .btn-full {
+    width: 100%;
+  }
+  
+  /* ── Icon ───────────────────────────────────── */
+  
+  .btn-icon {
+    display: flex;
+    align-items: center;
+    font-size: 1em;
+  }
