@@ -1,384 +1,570 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { coursesAPI } from '../../api/courses';
 import CourseList from '../../courses/CourseList';
-import CourseFilter from '../../courses/CourseFilter';
-import { FiSearch, FiX, FiChevronDown, FiSliders } from 'react-icons/fi';
+import { FiSearch, FiX, FiArrowRight, FiArrowLeft, FiSliders } from 'react-icons/fi';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './CourseCatalog.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// IDs fijos de categorías — el label y la imagen son de presentación.
-// El conteo real viene del backend.
-const PILATES_CATEGORIES = [
+/* ─────────────────────────────────────────────────────────────────
+   DATA
+───────────────────────────────────────────────────────────────── */
+
+const CATEGORIES = [
   {
     id: 'pilates-mat',
     label: 'Pilates Mat',
-    image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80',
+    desc: 'El método clásico. Trabajo de suelo puro con conciencia corporal.',
+    image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=900&q=85',
+    accent: '#b98967',
   },
   {
     id: 'stretching',
     label: 'Stretching',
-    image: 'https://images.unsplash.com/photo-1510894347713-fc3dc6166086?w=800&q=80',
+    desc: 'Flexibilidad, movilidad articular y liberación de tensión.',
+    image: 'https://images.unsplash.com/photo-1510894347713-fc3dc6166086?w=900&q=85',
+    accent: '#a07850',
   },
   {
     id: 'power-pilates',
     label: 'Power Pilates',
-    image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&q=80',
+    desc: 'Intensidad y control. Pilates con mayor carga de trabajo.',
+    image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=900&q=85',
+    accent: '#8c6544',
   },
   {
     id: 'power-workout',
     label: 'Power Workout',
-    image: 'https://images.unsplash.com/photo-1517832606299-7ae9b720a186?w=800&q=80',
+    desc: 'Entrenamiento funcional de alta intensidad. Sudor y fuerza.',
+    image: 'https://images.unsplash.com/photo-1517832606299-7ae9b720a186?w=900&q=85',
+    accent: '#b98967',
   },
   {
     id: 'hipopresivos',
-    label: 'Trabajos hipopresivos',
-    image: 'https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=800&q=80',
+    label: 'Hipopresivos',
+    desc: 'Trabajo postural profundo. Core hipopresivo y suelo pélvico.',
+    image: 'https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=900&q=85',
+    accent: '#a07850',
   },
   {
     id: 'fuerza',
     label: 'Fuerza',
-    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80',
+    desc: 'Ganancia muscular con técnica. Progresión controlada y segura.',
+    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=900&q=85',
+    accent: '#8c6544',
   },
 ];
 
-const DIFFICULTY_OPTIONS = [
+const LEVELS = [
   { value: '',             label: 'Todos los niveles' },
   { value: 'beginner',     label: 'Principiante' },
   { value: 'intermediate', label: 'Intermedio' },
   { value: 'advanced',     label: 'Avanzado' },
 ];
 
-// ─── Empty state reutilizable ────────────────────────────────────────────────
-const EmptyState = ({ msg, onReset, resetLabel }) => (
-  <div className="empty-state">
-    <span className="empty-star">✦</span>
-    <h3>Sin resultados</h3>
-    <p>{msg}</p>
-    <button className="empty-btn" onClick={onReset}>{resetLabel}</button>
-  </div>
-);
+const SORT_OPTIONS = [
+  { value: '',            label: 'Relevancia' },
+  { value: 'price_asc',  label: 'Precio: menor a mayor' },
+  { value: 'price_desc', label: 'Precio: mayor a menor' },
+  { value: 'newest',     label: 'Más nuevos' },
+];
 
-// ─── CourseCatalog ───────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────────
+   SUB-COMPONENTES
+───────────────────────────────────────────────────────────────── */
+
+function EmptyState({ msg, onReset }) {
+  return (
+    <div className="cc-empty">
+      <span className="cc-empty__icon" aria-hidden="true">✦</span>
+      <h3 className="cc-empty__title">Sin resultados</h3>
+      <p className="cc-empty__msg">{msg}</p>
+      <button className="cc-empty__btn" onClick={onReset}>Ver todos</button>
+    </div>
+  );
+}
+
+/* Contador de cursos con dots de carga */
+function CourseCount({ loading, count }) {
+  if (loading) {
+    return (
+      <span className="cc-count">
+        <span className="cc-dots">
+          <span /><span /><span />
+        </span>
+      </span>
+    );
+  }
+  return (
+    <span className="cc-count">
+      <strong>{count}</strong> curso{count !== 1 ? 's' : ''}
+    </span>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   MAIN COMPONENT
+───────────────────────────────────────────────────────────────── */
+
 const CourseCatalog = () => {
-  // Tab activo: 'todos' | 'categorias'
-  const [activeTab, setActiveTab]               = useState('todos');
-
-  // Cursos cargados
-  const [courses, setCourses]                   = useState([]);
-  const [loading, setLoading]                   = useState(true);
-
-  // Búsqueda (solo tab "todos")
-  const [searchTerm, setSearchTerm]             = useState('');
-
-  // Filtros compartidos entre CourseFilter (todos) y filtro interno de categoría
-  const [filters, setFilters]                   = useState({
-    difficulty: '',
-    min_price: '',
-    max_price: '',
-    is_featured: false,
-  });
-
-  // Categoría seleccionada (tab "categorias")
+  /* ── Estado principal ── */
   const [selectedCategory, setSelectedCategory] = useState(null);
-
-  // Filtro de dificultad dentro de la categoría (dropdown compacto)
-  const [catDifficulty, setCatDifficulty]       = useState('');
-  const [catDiffOpen, setCatDiffOpen]           = useState(false);
-
-  // Conteos reales por categoría: { 'pilates-mat': { total: 12, beginner: 4, ... } }
+  const [courses, setCourses]                   = useState([]);
+  const [loading, setLoading]                   = useState(false);
   const [categoryStats, setCategoryStats]       = useState({});
-  const [statsLoading, setStatsLoading]         = useState(true);
 
-  const heroRef = useRef(null);
+  /* ── Filtros dentro de categoría ── */
+  const [level, setLevel]           = useState('');
+  const [sort, setSort]             = useState('');
+  const [search, setSearch]         = useState('');
+  const [onlyFeatured, setOnlyFeatured] = useState(false);
+  const [filtersOpen, setFiltersOpen]   = useState(false);
 
-  // ── Animación de entrada hero ──────────────────────────────────────────────
+  /* ── Búsqueda global (sin categoría) ── */
+  const [globalSearch, setGlobalSearch]   = useState('');
+  const [globalResults, setGlobalResults] = useState([]);
+  const [globalLoading, setGlobalLoading] = useState(false);
+  const [searchMode, setSearchMode]       = useState(false);
+
+  const heroRef     = useRef(null);
+  const detailRef   = useRef(null);
+  const searchTimer = useRef(null);
+
+  /* ── Animación hero ── */
   useEffect(() => {
     const tl = gsap.timeline({ delay: 0.05 });
-    tl.fromTo('.hero-eyebrow', { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' })
-      .fromTo('.catalog-hero-title',   { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.4')
-      .fromTo('.hero-sub',     { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.5')
-      .fromTo('.main-tabs-wrap', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.35');
+    tl.fromTo('.cc-hero-eyebrow',
+        { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' })
+      .fromTo('.cc-hero-title .cc-word',
+        { yPercent: 105, opacity: 0 },
+        { yPercent: 0, opacity: 1, stagger: 0.07, duration: 0.9, ease: 'expo.out' },
+        '-=0.4'
+      )
+      .fromTo('.cc-hero-sub',
+        { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 },
+        '-=0.45'
+      )
+      .fromTo('.cc-cat-item',
+        { opacity: 0, y: 32, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, stagger: 0.06, duration: 0.7, ease: 'expo.out' },
+        '-=0.3'
+      );
     return () => tl.kill();
   }, []);
 
-  // ── Cargar stats reales de todas las categorías ────────────────────────────
+  /* ── Cargar stats de categorías ── */
   useEffect(() => {
-    const loadStats = async () => {
-      setStatsLoading(true);
+    const load = async () => {
       try {
         const data = await coursesAPI.getCategoryStats();
         setCategoryStats(data || {});
-      } catch {
-        setCategoryStats({});
-      } finally {
-        setStatsLoading(false);
-      }
+      } catch { /* silencioso */ }
     };
-    loadStats();
+    load();
   }, []);
 
-  // ── Cargar cursos (tab "todos" o categoria seleccionada) ───────────────────
+  /* ── Cargar cursos de categoría ── */
   const loadCourses = useCallback(async () => {
+    if (!selectedCategory) return;
+    setLoading(true);
     try {
-      setLoading(true);
-
       const params = {};
-
-      // Filtros comunes
-      if (filters.difficulty) params.difficulty    = filters.difficulty;
-      if (filters.min_price)  params.min_price     = filters.min_price;
-      if (filters.max_price)  params.max_price     = filters.max_price;
-      if (filters.is_featured) params.is_featured  = true;
-
-      if (activeTab === 'todos') {
-        if (searchTerm) params.search = searchTerm;
-      } else if (activeTab === 'categorias' && selectedCategory) {
+      if (selectedCategory !== 'all') {
         params.category = selectedCategory;
-        // En categoría usamos catDifficulty (filtro propio del tab), no el de CourseFilter
-        delete params.difficulty;
-        if (catDifficulty) params.difficulty = catDifficulty;
       }
-
+      
+      if (level)        params.difficulty  = level;
+      if (onlyFeatured) params.is_featured = true;
+      if (search)       params.search      = search;
+      if (sort === 'price_asc')  params.ordering = 'price';
+      if (sort === 'price_desc') params.ordering = '-price';
+      if (sort === 'newest')     params.ordering = '-created_at';
       const data = await coursesAPI.getAllCourses(params);
       setCourses(data.results ?? data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab, selectedCategory, searchTerm, filters, catDifficulty]);
+    } catch { setCourses([]); }
+    finally { setLoading(false); }
+  }, [selectedCategory, level, sort, search, onlyFeatured]);
 
+  useEffect(() => { loadCourses(); }, [loadCourses]);
+
+  /* ── Búsqueda global con debounce ── */
   useEffect(() => {
-    if (activeTab === 'todos' || (activeTab === 'categorias' && selectedCategory)) {
-      loadCourses();
-    }
-  }, [loadCourses]);
+    if (!searchMode) return;
+    clearTimeout(searchTimer.current);
+    if (!globalSearch.trim()) { setGlobalResults([]); return; }
+    searchTimer.current = setTimeout(async () => {
+      setGlobalLoading(true);
+      try {
+        const data = await coursesAPI.getAllCourses({ search: globalSearch });
+        setGlobalResults(data.results ?? data);
+      } catch { setGlobalResults([]); }
+      finally { setGlobalLoading(false); }
+    }, 380);
+    return () => clearTimeout(searchTimer.current);
+  }, [globalSearch, searchMode]);
 
-  // ── Cambio de tab ──────────────────────────────────────────────────────────
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setSelectedCategory(null);
-    setSearchTerm('');
-    setCatDifficulty('');
-    setFilters({ difficulty: '', min_price: '', max_price: '', is_featured: false });
-    gsap.fromTo('.tab-body', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' });
-  };
-
-  // ── Seleccionar categoría ──────────────────────────────────────────────────
+  /* ── Seleccionar categoría ── */
   const handleCategorySelect = (id) => {
     setSelectedCategory(id);
-    setCatDifficulty('');
-    gsap.fromTo('.cat-detail', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' });
+    setLevel(''); setSort(''); setSearch(''); setOnlyFeatured(false);
+    setSearchMode(false); setGlobalSearch('');
+    // Scroll suave al detalle
+    setTimeout(() => {
+      detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+
+    // Animación premium de entrada
+    const tl = gsap.timeline({ delay: 0.1 });
+    tl.fromTo('.cc-detail', 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 0.4 }
+      )
+      .fromTo('.cc-detail-header__info > *', 
+        { opacity: 0, y: 30 }, 
+        { opacity: 1, y: 0, stagger: 0.12, duration: 0.8, ease: 'power4.out' },
+        '-=0.2'
+      )
+      .fromTo('.cc-detail-header__visual',
+        { opacity: 0, x: 40, rotate: 8, scale: 0.95 },
+        { opacity: 1, x: 0, rotate: 2, scale: 1, duration: 1.2, ease: 'expo.out' },
+        '-=0.7'
+      )
+      .fromTo('.cc-filter-strip',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.6 },
+        '-=0.8'
+      );
   };
 
-  // ── Callback de CourseFilter (tab "todos") ─────────────────────────────────
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
+  /* ── Volver a categorías ── */
+  const handleBack = () => {
+    setSelectedCategory(null);
+    setLevel(''); setSort(''); setSearch(''); setOnlyFeatured(false);
+    heroRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    gsap.fromTo('.cc-cat-item',
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, stagger: 0.05, duration: 0.5, ease: 'expo.out' }
+    );
   };
 
-  const selectedCat = PILATES_CATEGORIES.find(c => c.id === selectedCategory);
+  /* ── Activar modo búsqueda global ── */
+  const handleGlobalSearchMode = () => {
+    setSearchMode(true);
+    setSelectedCategory(null);
+  };
 
-  // Helper: texto del subtítulo de categoría
-  const getCatSubtitle = (catId) => {
-    const stats = categoryStats[catId];
-    if (!stats) return statsLoading ? 'cargando...' : '0 clases';
-    const parts = [];
-    if (stats.total > 0) parts.push(`${stats.total} clase${stats.total !== 1 ? 's' : ''}`);
-    if (stats.beginner)    parts.push(`${stats.beginner} básico${stats.beginner !== 1 ? 's' : ''}`);
-    if (stats.intermediate) parts.push(`${stats.intermediate} intermedio${stats.intermediate !== 1 ? 's' : ''}`);
-    if (stats.advanced)    parts.push(`${stats.advanced} avanzado${stats.advanced !== 1 ? 's' : ''}`);
-    return parts.length ? parts.join(' · ') : 'Sin clases aún';
+  const cat = selectedCategory === 'all'
+    ? {
+        id: 'all',
+        label: 'Todos los cursos',
+        desc: 'Explorá nuestra biblioteca completa de clases de Pilates, Stretching e Hipopresivos.',
+        image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200&q=85',
+        accent: '#8c6544'
+      }
+    : CATEGORIES.find(c => c.id === selectedCategory);
+
+  const getStats = (id) => {
+    const s = categoryStats[id];
+    if (!s) return null;
+    return s.total > 0 ? `${s.total} clase${s.total !== 1 ? 's' : ''}` : 'Próximamente';
   };
 
   return (
-    <div className="catalog-page">
+    <div className="cc-page">
 
-      {/* ══ HERO ══ */}
-      <section className="catalog-hero catalog-hero-explore" ref={heroRef}>
-        <div className="hero-gradient" />
-        <div className="hero-grain" />
-        <div className="hero-inner">
-          <span className="hero-eyebrow">— Equilibrio Pinamar</span>
-          <h1 className="catalog-hero-title">
-            Explorá<br /><em>nuestros cursos</em>
+      {/* ════════════════════════════════════════════
+          HERO
+      ════════════════════════════════════════════ */}
+      <section className="cc-hero" ref={heroRef}>
+        <div className="cc-hero-grain" aria-hidden="true" />
+        <div className="cc-hero-glow"  aria-hidden="true" />
+
+        <div className="cc-hero-inner">
+          <span className="cc-hero-eyebrow">— Equilibrio Pinamar</span>
+
+          <h1 className="cc-hero-title">
+            {['Explorá',  <br/>,'nuestros', 'cursos'].map((w, i) => (
+              <span className="cc-word-wrap" key={i}>
+                <span className={`cc-word${i === 2 ? ' cc-word--accent' : ''}`}>{w} </span>
+              </span>
+            ))}
           </h1>
-          <p className="hero-sub">
+
+          <p className="cc-hero-sub">
             6 categorías · niveles básico, intermedio y avanzado
           </p>
+
+          {/* Acciones del hero */}
+          <div className="cc-hero-actions">
+            <button
+              className="cc-global-search-trigger"
+              onClick={handleGlobalSearchMode}
+            >
+              <FiSearch size={15} />
+              Buscar un curso específico...
+            </button>
+
+            <button 
+              className="cc-all-trigger"
+              onClick={() => handleCategorySelect('all')}
+            >
+              Ver todos los cursos
+            </button>
+          </div>
         </div>
-        <div className="hero-fade-bottom" />
+
+        <div className="cc-hero-fade" aria-hidden="true" />
       </section>
 
-      {/* ══ TABS ══ */}
-      <div className="main-tabs-wrap">
-        <div className="page-container">
-          <nav className="main-tabs">
-            <button
-              className={`tab-btn ${activeTab === 'todos' ? 'active' : ''}`}
-              onClick={() => handleTabChange('todos')}
-            >Todos</button>
-            <button
-              className={`tab-btn ${activeTab === 'categorias' ? 'active' : ''}`}
-              onClick={() => handleTabChange('categorias')}
-            >Categorías</button>
-          </nav>
-        </div>
-      </div>
-
-      {/* ══ BODY ══ */}
-      <div className="tab-body">
-
-        {/* ── TAB: TODOS ─────────────────────────────────────────────────── */}
-        {activeTab === 'todos' && (
-          <div className="page-container todos-layout">
-
-            {/* Fila de filtros horizontal justo debajo de los tabs */}
-            <div className="todos-filter-row">
-              <CourseFilter onFilterChange={handleFilterChange} />
+      {/* ════════════════════════════════════════════
+          BÚSQUEDA GLOBAL (overlay)
+      ════════════════════════════════════════════ */}
+      {searchMode && (
+        <div className="cc-search-overlay">
+          <div className="cc-search-overlay__inner">
+            <div className="cc-search-bar">
+              <FiSearch className="cc-search-bar__icon" />
+              <input
+                autoFocus
+                type="text"
+                className="cc-search-bar__input"
+                placeholder="Buscar cursos..."
+                value={globalSearch}
+                onChange={e => setGlobalSearch(e.target.value)}
+              />
+              <button
+                className="cc-search-bar__close"
+                onClick={() => { setSearchMode(false); setGlobalSearch(''); setGlobalResults([]); }}
+              >
+                <FiX size={16} />
+              </button>
             </div>
 
-            {/* Main: búsqueda + cursos */}
-            <main className="catalog-main">
-
-              {/* Barra de búsqueda + contador */}
-              <div className="search-row">
-                <div className="fb-search">
-                  <FiSearch className="fb-search-icon" />
-                  <input
-                    type="text"
-                    className="fb-search-input"
-                    placeholder="Buscar curso..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                  />
-                  {searchTerm && (
-                    <button className="fb-clear" onClick={() => setSearchTerm('')}><FiX /></button>
-                  )}
-                </div>
-
-                <span className="fb-count">
-                  {loading
-                    ? <span className="fb-dots"><span /><span /><span /></span>
-                    : <><strong>{courses.length}</strong> curso{courses.length !== 1 ? 's' : ''}</>
-                  }
-                </span>
-              </div>
-
-              {/* CourseList — maneja el grid internamente */}
-              {!loading && courses.length === 0 ? (
-                <EmptyState
-                  msg={searchTerm ? `Sin resultados para "${searchTerm}"` : 'Probá ajustar los filtros'}
-                  onReset={() => {
-                    setSearchTerm('');
-                    setFilters({ difficulty: '', min_price: '', max_price: '', is_featured: false });
-                  }}
-                  resetLabel="Ver todos"
-                />
-              ) : (
-                <CourseList courses={courses} loading={loading} viewMode="grid" />
-              )}
-
-            </main>
-          </div>
-        )}
-
-        {/* ── TAB: CATEGORÍAS ────────────────────────────────────────────── */}
-        {activeTab === 'categorias' && (
-          <div className="page-container">
-
-            {/* Grid de tarjetas de categoría */}
-            {!selectedCategory && (
-              <div className="cat-grid-wrap">
-                <p className="cat-grid-hint">
-                  Elegí una categoría para explorar sus clases por nivel
-                </p>
-                <div className="cat-grid">
-                  {PILATES_CATEGORIES.map((cat, i) => (
-                    <button
-                      key={cat.id}
-                      className="cat-card"
-                      onClick={() => handleCategorySelect(cat.id)}
-                      style={{ animationDelay: `${i * 0.035}s` }}
-                    >
-                      <div className="cat-card-img" style={{ backgroundImage: `url(${cat.image})` }} />
-                      <div className="cat-card-fog" />
-                      <span className="cat-card-name">
-                        {cat.label}
-                        <small className="cat-card-detail">
-                          {getCatSubtitle(cat.id)}
-                        </small>
-                      </span>
-                    </button>
-                  ))}
-                </div>
+            {globalSearch && (
+              <div className="cc-search-results">
+                {globalLoading ? (
+                  <div className="cc-search-results__loading">
+                    <span className="cc-dots"><span /><span /><span /></span>
+                    Buscando...
+                  </div>
+                ) : globalResults.length === 0 ? (
+                  <p className="cc-search-results__empty">
+                    Sin resultados para "{globalSearch}"
+                  </p>
+                ) : (
+                  <>
+                    <p className="cc-search-results__count">
+                      {globalResults.length} resultado{globalResults.length !== 1 ? 's' : ''}
+                    </p>
+                    <CourseList courses={globalResults} loading={false} viewMode="grid" />
+                  </>
+                )}
               </div>
             )}
 
-            {/* Vista de categoría seleccionada */}
-            {selectedCategory && selectedCat && (
-              <div className="cat-detail">
+            {!globalSearch && (
+              <p className="cc-search-results__hint">
+                Escribí para buscar en todos los cursos
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
-                {/* Banner */}
-                <div className="cat-banner" style={{ backgroundImage: `url(${selectedCat.image})` }}>
-                  <div className="cat-banner-overlay" />
-                  <div className="cat-banner-content">
-                    <button className="cat-back" onClick={() => setSelectedCategory(null)}>
-                      ← Categorías
-                    </button>
-                    <h2 className="cat-banner-title">{selectedCat.label}</h2>
-                    {categoryStats[selectedCategory] && (
-                      <p className="cat-banner-sub">
-                        {getCatSubtitle(selectedCategory)}
-                      </p>
-                    )}
-                  </div>
+      {/* ════════════════════════════════════════════
+          GRID DE CATEGORÍAS
+      ════════════════════════════════════════════ */}
+      {!searchMode && (
+        <section className="cc-categories-section">
+          <div className="cc-container">
+
+            {!selectedCategory && (
+              <>
+                <div className="cc-section-header">
+                  <p className="cc-overline">Elegí tu práctica</p>
+                  <h2 className="cc-section-title">
+                    ¿Qué querés trabajar hoy?
+                  </h2>
                 </div>
 
-                {/* Filtro de dificultad dentro de la categoría */}
-                <div className="cat-filter-bar">
-                  <span className="cat-filter-label">Nivel:</span>
-                  <div className="cat-diff-tabs">
-                    {DIFFICULTY_OPTIONS.map(opt => (
+                <div className="cc-cat-grid">
+                  {CATEGORIES.map((c, i) => {
+                    const stats = getStats(c.id);
+                    return (
                       <button
-                        key={opt.value}
-                        className={`cat-diff-tab ${catDifficulty === opt.value ? 'active' : ''}`}
-                        onClick={() => setCatDifficulty(opt.value)}
+                        key={c.id}
+                        className="cc-cat-item"
+                        onClick={() => handleCategorySelect(c.id)}
+                        style={{ '--cat-accent': c.accent, animationDelay: `${i * 0.04}s` }}
                       >
-                        {opt.label}
+                        <div
+                          className="cc-cat-item__img"
+                          style={{ backgroundImage: `url(${c.image})` }}
+                        />
+                        <div className="cc-cat-item__fog" />
+                        <div className="cc-cat-item__body">
+                          <div className="cc-cat-item__top">
+                            {stats && (
+                              <span className="cc-cat-item__count">{stats}</span>
+                            )}
+                          </div>
+                          <div className="cc-cat-item__bottom">
+                            <h3 className="cc-cat-item__title">{c.label}</h3>
+                            <p className="cc-cat-item__desc">{c.desc}</p>
+                            <span className="cc-cat-item__cta">
+                              Ver clases <FiArrowRight size={13} />
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="cc-section-footer">
+                  <button 
+                    className="cc-btn-outline"
+                    onClick={() => handleCategorySelect('all')}
+                  >
+                    Ver todos los cursos <FiArrowRight size={16} />
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* ════════════════════════════════════════
+                DETALLE DE CATEGORÍA
+            ════════════════════════════════════════ */}
+            {selectedCategory && cat && (
+              <div className="cc-detail" ref={detailRef}>
+
+                {/* Editorial Header */}
+                <header className="cc-detail-header">
+                  <div className="cc-detail-header__info">
+                    <button className="cc-back-btn-minimal" onClick={handleBack}>
+                      <FiArrowLeft size={16} /> Volver a categorías
+                    </button>
+                    <div className="cc-detail-header__content">
+                      <span className="cc-detail-header__eyebrow">
+                        Equilibrio Pinamar — {cat.id === 'all' ? 'Biblioteca' : 'Categoría'}
+                      </span>
+                      <h2 className="cc-detail-header__title">{cat.label}</h2>
+                      <p className="cc-detail-header__desc">{cat.desc}</p>
+                    </div>
+                  </div>
+                  <div className="cc-detail-header__visual">
+                    <div className="cc-detail-header__image-frame">
+                      <img src={cat.image} alt={cat.label} className="cc-detail-header__img" />
+                      <div className="cc-detail-header__badge">✦ {cat.label}</div>
+                    </div>
+                  </div>
+                </header>
+
+                {/* ── Barra de filtros ── */}
+                <div className="cc-filter-strip">
+
+                  {/* Niveles como chips */}
+                  <div className="cc-filter-strip__levels">
+                    {LEVELS.map(l => (
+                      <button
+                        key={l.value}
+                        className={`cc-chip ${level === l.value ? 'cc-chip--active' : ''}`}
+                        onClick={() => setLevel(l.value)}
+                      >
+                        {l.label}
                       </button>
                     ))}
                   </div>
+
+                  {/* Separador */}
+                  <div className="cc-filter-strip__sep" aria-hidden="true" />
+
+                  {/* Filtros extra: toggle */}
+                  <div className="cc-filter-strip__extras">
+                    <button
+                      className={`cc-chip cc-chip--icon ${onlyFeatured ? 'cc-chip--active' : ''}`}
+                      onClick={() => setOnlyFeatured(v => !v)}
+                    >
+                      ✦ Destacados
+                    </button>
+
+                    {/* Sort select */}
+                    <div className="cc-sort-wrap">
+                      <select
+                        className="cc-sort-select"
+                        value={sort}
+                        onChange={e => setSort(e.target.value)}
+                        aria-label="Ordenar por"
+                      >
+                        {SORT_OPTIONS.map(o => (
+                          <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Búsqueda dentro de categoría */}
+                    <div className="cc-cat-search">
+                      <FiSearch size={13} className="cc-cat-search__icon" />
+                      <input
+                        type="text"
+                        className="cc-cat-search__input"
+                        placeholder="Buscar en esta categoría..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                      />
+                      {search && (
+                        <button className="cc-cat-search__clear" onClick={() => setSearch('')}>
+                          <FiX size={12} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Contador */}
+                  <CourseCount loading={loading} count={courses.length} />
                 </div>
 
-                {/* Cursos de la categoría */}
-                <div className="courses-section">
+                {/* ── Cursos ── */}
+                <div className="cc-courses-wrap">
                   {!loading && courses.length === 0 ? (
                     <EmptyState
-                      msg={catDifficulty
-                        ? `Sin cursos de nivel "${DIFFICULTY_OPTIONS.find(o => o.value === catDifficulty)?.label}" en esta categoría`
-                        : 'Sin cursos disponibles en esta categoría'}
-                      onReset={() => setCatDifficulty('')}
-                      resetLabel="Ver todos los niveles"
+                      msg={
+                        level || search || onlyFeatured
+                          ? 'Probá ajustando los filtros'
+                          : 'Esta categoría no tiene cursos todavía'
+                      }
+                      onReset={() => {
+                        setLevel(''); setSearch(''); setOnlyFeatured(false); setSort('');
+                      }}
                     />
                   ) : (
                     <CourseList courses={courses} loading={loading} viewMode="grid" />
                   )}
                 </div>
 
+                {/* Navegar entre categorías */}
+                <div className="cc-cat-nav">
+                  <p className="cc-cat-nav__label">Otras categorías</p>
+                  <div className="cc-cat-nav__pills">
+                    {CATEGORIES.filter(c => c.id !== selectedCategory).map(c => (
+                      <button
+                        key={c.id}
+                        className="cc-cat-nav__pill"
+                        onClick={() => handleCategorySelect(c.id)}
+                      >
+                        {c.label} <FiArrowRight size={11} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             )}
 
           </div>
-        )}
-
-      </div>
-
-      {/* Backdrop para cerrar dropdowns */}
-      {catDiffOpen && (
-        <div className="global-backdrop" onClick={() => setCatDiffOpen(false)} />
+        </section>
       )}
 
     </div>

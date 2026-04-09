@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiClock, FiUsers, FiBook, FiStar, FiPlay, FiCheckCircle, FiLock, FiAward, FiDownload, FiShield } from 'react-icons/fi';
-import Button from '../components/common/Button';
+import {
+  FiClock, FiUsers, FiBook, FiPlay, FiCheckCircle,
+  FiLock, FiAward, FiShield, FiArrowRight,
+} from 'react-icons/fi';
 import NgrokImage from '../components/common/NgrokImage';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -9,364 +11,303 @@ import './CourseDetail.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
+/* ─── helpers ──────────────────────────────────────────────────── */
+
+function SplitWords({ text }) {
+  return (
+    <span aria-label={text}>
+      {text.split(' ').map((w, i) => (
+        <span className="cd-word-wrap" key={i}>
+          <span className="cd-word">{w}&nbsp;</span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+const DIFFICULTY = {
+  beginner:     { label: 'Principiante', color: '#059669' },
+  intermediate: { label: 'Intermedio',   color: '#d97706' },
+  advanced:     { label: 'Avanzado',     color: '#dc2626' },
+};
+
+const formatPrice = (p) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(p);
+
+/* ─── component ────────────────────────────────────────────────── */
+
 const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} }) => {
   const navigate = useNavigate();
-  const heroRef = useRef(null);
-  const contentRef = useRef(null);
 
   useEffect(() => {
-    // Animaciones de entrada
-    const tl = gsap.timeline({ delay: 0.2 });
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const tl = gsap.timeline({ delay: 0.12, defaults: { ease: 'expo.out' } });
+      tl
+        .fromTo('.cd-badge',   { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6 })
+        .fromTo('.cd-title .cd-word',
+          { yPercent: 115, opacity: 0 },
+          { yPercent: 0, opacity: 1, stagger: 0.05, duration: 0.95 }, '-=0.3')
+        .fromTo('.cd-hero-desc', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.75 }, '-=0.5')
+        .fromTo('.cd-meta-item', { opacity: 0, x: -12 }, { opacity: 1, x: 0, stagger: 0.06, duration: 0.5 }, '-=0.45')
+        .fromTo('.cd-card', { opacity: 0, y: 22, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.7 }, '-=0.65');
 
-    // Hero animation
-    tl.fromTo('.course-hero-content',
-      { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
-    )
-    .fromTo('.course-hero-sidebar',
-      { opacity: 0, y: 30, scale: 0.95 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'power3.out' },
-      '-=0.6'
-    )
-    .fromTo('.meta-item',
-      { opacity: 0, x: -20 },
-      { opacity: 1, x: 0, stagger: 0.1, duration: 0.5, ease: 'back.out(1.2)' },
-      '-=0.4'
-    );
+      gsap.fromTo('.cd-module',
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, stagger: 0.1, duration: 0.7, ease: 'expo.out',
+          scrollTrigger: { trigger: '.cd-modules-list', start: 'top 84%', toggleActions: 'play none none none' } });
 
-    // Modules animation on scroll
-    gsap.fromTo('.module-item',
-      { opacity: 0, y: 40 },
-      {
-        opacity: 1,
-        y: 0,
-        stagger: 0.15,
-        duration: 0.6,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: '.course-modules',
-          start: 'top 80%',
-          toggleActions: 'play none none none',
-        },
-      }
-    );
-
-    return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    };
+      gsap.fromTo('.cd-objective',
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, stagger: 0.06, duration: 0.6, ease: 'expo.out',
+          scrollTrigger: { trigger: '.cd-objectives-grid', start: 'top 84%', toggleActions: 'play none none none' } });
+    });
+    return () => { mm.revert(); ScrollTrigger.getAll().forEach(t => t.kill()); };
   }, []);
 
-  /* Construye lista plana de todas las lecciones en orden */
-  const getAllLessonsOrdered = () => {
+  const getAllLessons = () => {
     const all = [];
-    (course.modules || []).forEach(m =>
-      (m.lessons || []).forEach(l => all.push(l))
-    );
+    (course.modules || []).forEach(m => (m.lessons || []).forEach(l => all.push(l)));
     return all;
   };
-
-  /* Verifica si una lección está desbloqueada:
-     La primera siempre está libre; las demás requieren que la anterior esté completada */
-  const isLessonUnlocked = (targetLesson) => {
-    const all = getAllLessonsOrdered();
-    const idx = all.findIndex(l => l.id === targetLesson.id);
-    if (idx <= 0) return true; // primera lección siempre accesible
-    const prev = all[idx - 1];
-    return progress[prev.id]?.completed === true;
+  const isUnlocked = (lesson) => {
+    const all = getAllLessons();
+    const idx = all.findIndex(l => l.id === lesson.id);
+    if (idx <= 0) return true;
+    return progress[all[idx - 1].id]?.completed === true;
   };
-
   const handleLessonClick = (lesson) => {
-    if (!hasAccess) return;
-    if (!isLessonUnlocked(lesson)) return; // bloqueada
+    if (!hasAccess || !isUnlocked(lesson)) return;
     navigate(`/curso/${course.id}/player?lesson=${lesson.id}`);
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS'
-    }).format(price);
-  };
-
-  const getDifficultyText = (difficulty) => {
-    const texts = {
-      beginner: 'Principiante',
-      intermediate: 'Intermedio',
-      advanced: 'Avanzado'
-    };
-    return texts[difficulty] || difficulty;
-  };
-
-  const getDifficultyColor = (difficulty) => {
-    const colors = {
-      beginner: '#10b981',
-      intermediate: '#f59e0b',
-      advanced: '#ef4444'
-    };
-    return colors[difficulty] || '#6b7280';
-  };
+  const diff = DIFFICULTY[course.difficulty] || { label: course.difficulty, color: '#b98967' };
 
   return (
-    <div className="course-detail">
-      {/* Hero Section */}
-        <div className="course-hero" ref={heroRef}>
-        <div className="hero-background-pattern"></div>
-        
-        <div className="course-hero-content">
-          <div className="course-header">
-            <div 
-              className="difficulty-badge"
-              style={{ background: getDifficultyColor(course.difficulty) }}
-            >
-              <FiStar />
-              {getDifficultyText(course.difficulty)}
-            </div>
-            
-            {hasAccess && (
-              <div className="access-badge">
-                <FiCheckCircle />
-                Tienes acceso
-              </div>
-            )}
-          </div>
+    <div className="cd-page">
 
-          <h1 className="course-title-curso-public">{course.title}</h1>
-          <p className="course-short-desc-curso-public">{course.short_description}</p>
+      {/* ══ HERO ══════════════════════════════════════════════════════
+          Imagen full-width con overlay oscuro.
+          Max-width container adentro: info izquierda + card derecha.
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="cd-hero">
 
-          <div className="course-meta">
-            <div className="meta-item">
-              <FiClock />
-              <span>{course.duration_hours}h de contenido</span>
-            </div>
-
-            <div className="meta-item">
-              <FiBook />
-              <span>{course.total_lessons} lecciones</span>
-            </div>
-
-            <div className="meta-item">
-              <FiUsers />
-              <span>{course.total_students} estudiantes</span>
-            </div>
-
-            <div className="meta-item">
-              <FiAward />
-              <span>Certificado incluido</span>
-            </div>
-          </div>
+        {/* Fondo */}
+        <div className="cd-hero-bg" aria-hidden="true">
+          <NgrokImage src={course.cover_image} alt="" />
+          <div className="cd-hero-bg__overlay" />
         </div>
 
-        <div className="course-hero-sidebar">
-          <div className="sidebar-card">
-            <div className="course-preview-image">
-              <NgrokImage 
-                src={course.cover_image}
-                alt={course.title}
-              />
+        {/* Contenido centrado */}
+        <div className="cd-hero-inner">
+
+          {/* Info */}
+          <div className="cd-hero-info">
+            <div className="cd-badges">
+              <span className="cd-badge" style={{ '--badge-bg': diff.color }}>{diff.label}</span>
+              {hasAccess && (
+                <span className="cd-badge cd-badge--access">
+                  <FiCheckCircle size={12} /> Tenés acceso
+                </span>
+              )}
             </div>
 
-            {hasAccess ? (
-              <div className="access-section">
-                <Button 
-                  size="large" 
-                  className="btn-access-course"
-                  onClick={() => window.location.href = `/curso/${course.id}/player`}
-                >
-                  <FiPlay />
-                  Comenzar Curso
-                </Button>
+            <h1 className="cd-title">
+              <SplitWords text={course.title} />
+            </h1>
+
+            <p className="cd-hero-desc">{course.short_description}</p>
+
+            <div className="cd-meta">
+              <span className="cd-meta-item"><FiClock size={14} /> {course.duration_hours}h</span>
+              <span className="cd-meta-sep">·</span>
+              <span className="cd-meta-item"><FiBook size={14} /> {course.total_lessons} lecciones</span>
+              <span className="cd-meta-sep">·</span>
+              <span className="cd-meta-item"><FiUsers size={14} /> {course.total_students} estudiantes</span>
+              <span className="cd-meta-sep">·</span>
+              <span className="cd-meta-item"><FiAward size={14} /> Certificado</span>
+            </div>
+          </div>
+
+          {/* Card de compra */}
+          <aside className="cd-hero-aside">
+            <div className="cd-card">
+              {hasAccess ? (
+                <>
+                  <div className="cd-access-msg">
+                    <FiCheckCircle size={20} className="cd-access-msg__icon" />
+                    <div>
+                      <strong>Ya tenés acceso</strong>
+                      <p>Entrá cuando quieras</p>
+                    </div>
+                  </div>
+                  <button
+                    className="cd-btn-buy"
+                    onClick={() => navigate(`/curso/${course.id}/player`)}
+                  >
+                    <FiPlay size={14} /> Comenzar curso
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="cd-price-block">
+                    <span className="cd-price-label">Inversión única</span>
+                    <span className="cd-price">{formatPrice(course.price)}</span>
+                  </div>
+
+                  <button className="cd-btn-buy" onClick={onPurchase} disabled={loading}>
+                    {loading
+                      ? <><span className="cd-spinner" /> Procesando...</>
+                      : <>Comprar ahora <FiArrowRight size={14} /></>
+                    }
+                  </button>
+
+                  <ul className="cd-benefits">
+                    {[
+                      [FiCheckCircle, 'Acceso de por vida'],
+                      [FiCheckCircle, 'Certificado al finalizar'],
+                      [FiShield,      'Garantía 30 días'],
+                      [FiCheckCircle, 'Actualizaciones gratuitas'],
+                    ].map(([Icon, text]) => (
+                      <li key={text}><Icon size={13} /> {text}</li>
+                    ))}
+                  </ul>
+
+                  <div className="cd-trust">
+                    <FiShield size={12} /> Pago 100% seguro
+                  </div>
+                </>
+              )}
+            </div>
+          </aside>
+
+        </div>
+      </section>
+
+      {/* ══ CUERPO ════════════════════════════════════════════════════ */}
+      <div className="cd-body">
+        <div className="cd-body-inner">
+
+          {/* Objetivos */}
+          {course.learning_objectives?.length > 0 && (
+            <section className="cd-section cd-section--tinted">
+              <p className="cd-overline">Lo que aprenderás</p>
+              <h2 className="cd-section-title">Objetivos del curso</h2>
+              <div className="cd-objectives-grid">
+                {course.learning_objectives.map((obj, i) => (
+                  <div key={i} className="cd-objective">
+                    <FiCheckCircle size={15} className="cd-obj-icon" />
+                    <span>{obj}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Descripción */}
+          <section className="cd-section">
+            <p className="cd-overline">Descripción</p>
+            <h2 className="cd-section-title">Sobre este curso</h2>
+            <p className="cd-desc-text">{course.description}</p>
+          </section>
+
+          {/* Módulos */}
+          <section className="cd-section">
+            <p className="cd-overline">Programa</p>
+            <h2 className="cd-section-title">Contenido del curso</h2>
+
+            {course.modules?.length > 0 ? (
+              <div className="cd-modules-list">
+                {course.modules.map((mod, mi) => (
+                  <div key={mod.id} className="cd-module">
+                    <div className="cd-module-head">
+                      <span className="cd-module-num">Módulo {mi + 1}</span>
+                      <div className="cd-module-info">
+                        <h3 className="cd-module-title">{mod.title}</h3>
+                        <div className="cd-module-stats">
+                          <span>{mod.lessons.length} lecciones</span>
+                          <span className="cd-dot">·</span>
+                          <span>{mod.lessons.reduce((a, l) => a + (l.duration_minutes || 0), 0)} min</span>
+                        </div>
+                      </div>
+                    </div>
+                    {mod.description && <p className="cd-module-desc">{mod.description}</p>}
+                    <ul className="cd-lessons">
+                      {mod.lessons.map((lesson, li) => {
+                        const unlocked  = !hasAccess ? false : isUnlocked(lesson);
+                        const clickable = hasAccess && unlocked;
+                        const locked    = hasAccess && !unlocked;
+                        return (
+                          <li
+                            key={lesson.id}
+                            className={[
+                              'cd-lesson',
+                              clickable         ? 'cd-lesson--click'   : '',
+                              locked            ? 'cd-lesson--locked'  : '',
+                              lesson.is_preview ? 'cd-lesson--preview' : '',
+                            ].filter(Boolean).join(' ')}
+                            onClick={() => handleLessonClick(lesson)}
+                            title={locked ? 'Completá la lección anterior para desbloquear' : ''}
+                          >
+                            <span className="cd-lesson-num">{li + 1}</span>
+                            <span className="cd-lesson-icon">
+                              {locked ? <FiLock size={13} /> : <FiPlay size={13} />}
+                            </span>
+                            <div className="cd-lesson-body">
+                              <span className="cd-lesson-title">{lesson.title}</span>
+                              {lesson.description && (
+                                <span className="cd-lesson-subdesc">{lesson.description}</span>
+                              )}
+                            </div>
+                            <div className="cd-lesson-meta">
+                              <span className="cd-lesson-dur">
+                                <FiClock size={11} /> {lesson.duration_minutes} min
+                              </span>
+                              {lesson.is_preview && (
+                                <span className="cd-lesson-free">Gratis</span>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
               </div>
             ) : (
-              <div className="purchase-section">
-                <div className="price-display">
-                  <div className="price-label">Inversión única</div>
-                  <div className="price">{formatPrice(course.price)}</div>
-                </div>
-                
-                <Button 
-                  size="large" 
-                  className="btn-purchase"
+              <div className="cd-empty">
+                <FiBook size={36} />
+                <p>El contenido estará disponible próximamente</p>
+              </div>
+            )}
+          </section>
+
+          {/* CTA bottom */}
+          {!hasAccess && (
+            <section className="cd-cta">
+              <div className="cd-cta-copy">
+                <p className="cd-overline cd-overline--light">¿Lista para empezar?</p>
+                <h2 className="cd-cta-title">
+                  Transformá tu práctica<br />
+                  <em>desde el primer día.</em>
+                </h2>
+                <p className="cd-cta-sub">
+                  Unite a {course.total_students} estudiantes que ya están aprendiendo
+                </p>
+              </div>
+              <div className="cd-cta-action">
+                <span className="cd-cta-price">{formatPrice(course.price)}</span>
+                <button
+                  className="cd-btn-buy cd-btn-buy--light"
                   onClick={onPurchase}
                   disabled={loading}
                 >
-                  {loading ? (
-                    <>
-                      <span className="spinner"></span>
-                      Procesando...
-                    </>
-                  ) : (
-                    <>
-                      Comprar Ahora
-                    </>
-                  )}
-                </Button>
-
-                <div className="purchase-benefits">
-                  <div className="benefit-item">
-                    <FiCheckCircle />
-                    <span>Acceso de por vida</span>
-                  </div>
-                  <div className="benefit-item">
-                    <FiCheckCircle />
-                    <span>Certificado al finalizar</span>
-                  </div>
-                  <div className="benefit-item">
-                    <FiShield />
-                    <span>Garantía 30 días</span>
-                  </div>
-                  <div className="benefit-item">
-                    <FiCheckCircle />
-                    <span>Actualizaciones gratuitas</span>
-                  </div>
-                </div>
-
-                <div className="trust-badge">
-                  <FiShield />
-                  <span>Pago 100% seguro</span>
-                </div>
+                  {loading ? 'Procesando...' : <>Comprar curso <FiArrowRight size={14} /></>}
+                </button>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Content Section */}
-      <div className="course-content-section" ref={contentRef}>
-        <div className="content-container">
-          {/* What you'll learn */}
-          {course.learning_objectives && course.learning_objectives.length > 0 && (
-            <div className="learning-objectives-card">
-              <h2 className="section-title">
-                <FiCheckCircle />
-                Lo que aprenderás
-              </h2>
-              <div className="objectives-grid">
-                {course.learning_objectives.map((objective, index) => (
-                  <div key={index} className="objective-item">
-                    <FiCheckCircle className="check-icon" />
-                    <span>{objective}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            </section>
           )}
 
-          {/* Description */}
-          <div className="course-description-card">
-            <h2 className="section-title">
-              <FiBook />
-              Sobre este curso
-            </h2>
-            <p className="description-text">{course.description}</p>
-          </div>
-
-          {/* Course Modules */}
-          <div className="course-modules-card">
-            <h2 className="section-title">
-              <FiDownload />
-              Contenido del Curso
-            </h2>
-            
-            {course.modules && course.modules.length > 0 ? (
-              <div className="modules-list">
-                {course.modules.map((module, index) => (
-                  <div key={module.id} className="module-item">
-                    <div className="module-header">
-                      <div className="module-number">
-                        Módulo {index + 1}
-                      </div>
-                      <h3 className="module-title">{module.title}</h3>
-                      <div className="module-stats">
-                        <span className="module-lessons">
-                          {module.lessons.length} lecciones
-                        </span>
-                        <span className="module-duration">
-                          {module.lessons.reduce((acc, lesson) => acc + (lesson.duration_minutes || 0), 0)} min
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {module.description && (
-                      <p className="module-description">{module.description}</p>
-                    )}
-                    
-                    <div className="lessons-list">
-                      {module.lessons.map((lesson, lessonIndex) => {
-                        const unlocked = !hasAccess ? false : isLessonUnlocked(lesson);
-                        const clickable = hasAccess && unlocked;
-                        return (
-                        <div 
-                          key={lesson.id} 
-                          className={`lesson-item ${lesson.is_preview ? 'preview' : ''} ${hasAccess ? 'has-access' : ''} ${clickable ? 'clickable' : ''} ${hasAccess && !unlocked ? 'locked-sequential' : ''}`}
-                          onClick={() => handleLessonClick(lesson)}
-                          title={hasAccess && !unlocked ? 'Debés completar la lección anterior para desbloquear esta' : ''}
-                          style={{ cursor: clickable ? 'pointer' : 'default' }}
-                        >
-                          <div className="lesson-number">
-                            {lessonIndex + 1}
-                          </div>
-                          
-                          <div className="lesson-icon">
-                            {hasAccess && !unlocked ? (
-                              <FiLock />
-                            ) : lesson.is_preview || hasAccess ? (
-                              <FiPlay />
-                            ) : (
-                              <FiLock />
-                            )}
-                          </div>
-                          
-                          <div className="lesson-content">
-                            <span className="lesson-title">{lesson.title}</span>
-                            {lesson.description && (
-                              <span className="lesson-desc">{lesson.description}</span>
-                            )}
-                          </div>
-                          
-                          <div className="lesson-meta">
-                            <span className="lesson-duration">
-                              <FiClock />
-                              {lesson.duration_minutes} min
-                            </span>
-                            {lesson.is_preview && (
-                              <span className="preview-badge">
-                                Gratis
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="no-modules">
-                <FiBook />
-                <p>El contenido del curso estará disponible próximamente</p>
-              </div>
-            )}
-          </div>
-
-          {/* CTA Bottom */}
-          {!hasAccess && (
-            <div className="cta-bottom-card">
-              <div className="cta-content">
-                <h3>¿Lista para comenzar tu transformación?</h3>
-                <p>Únete a {course.total_students} estudiantes que ya están aprendiendo</p>
-                <div className="cta-price">{formatPrice(course.price)}</div>
-              </div>
-              <Button 
-                size="large" 
-                className="btn-purchase-bottom"
-                onClick={onPurchase}
-                disabled={loading}
-              >
-                {loading ? 'Procesando...' : 'Comprar Curso'}
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </div>
