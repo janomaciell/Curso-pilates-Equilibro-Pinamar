@@ -511,38 +511,7 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Figura anatómica SVG */}
-        <div className="hero-figure-wrap" aria-hidden="true">
-          <svg className="pilates-figure" viewBox="0 0 220 480" fill="none"
-            xmlns="http://www.w3.org/2000/svg">
-            <circle cx="110" cy="48" r="28"
-              stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" />
-            <line x1="110" y1="76" x2="110" y2="100"
-              stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" className="draw-line" />
-            <path d="M60 110 Q110 95 160 110"
-              stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" className="draw-line" />
-            <path d="M110 100 Q108 200 112 310"
-              stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" fill="none" className="draw-line" />
-            <path d="M65 115 Q40 150 30 190"
-              stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" className="draw-line" />
-            <path d="M155 115 Q180 150 190 190"
-              stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" className="draw-line" />
-            <ellipse cx="110" cy="175" rx="42" ry="55"
-              stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-            <path d="M75 300 Q110 290 145 300"
-              stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" fill="none" className="draw-line" />
-            <path d="M90 305 Q70 360 50 420"
-              stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" className="draw-line" />
-            <path d="M130 305 Q150 360 170 420"
-              stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" className="draw-line" />
-            <path d="M50 420 Q45 428 38 426"
-              stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" fill="none" className="draw-line" />
-            <path d="M170 420 Q175 428 182 426"
-              stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" fill="none" className="draw-line" />
-            <circle cx="110" cy="240" r="90"
-              stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4 8" />
-          </svg>
-        </div>
+
       </section>
 
       {/* ════════════════════════════════════════════════
