@@ -9,6 +9,8 @@ import {
 } from 'react-icons/fi';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import TestimonialsSection from '../../components/home/TestimonialsSection';
+import FaqSection from '../../components/home/FaqSection';
 import './Home.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -74,21 +76,6 @@ const collections = [
   { title: 'Meditación',       desc: 'Prácticas breves para acompañar tu movimiento con presencia.' },
 ];
 
-const communityTestimonials = [
-  {
-    text: 'Completar una clase casi todos los días me trajo alegría, satisfacción y una forma física que no imaginaba posible.',
-    name: 'Alumna Equilibrio',
-  },
-  {
-    text: 'A los 47 años estoy en la mejor forma de mi vida. No puedo imaginar un día sin mi práctica.',
-    name: 'Alumna Equilibrio',
-  },
-  {
-    text: 'La calidad y variedad de las clases hace que nunca me aburra. Es un espacio realmente amable.',
-    name: 'Alumna Equilibrio',
-  },
-];
-
 const courseModel = {
   title: 'Un solo pago por curso',
   desc: 'Elegí el curso que quieras y accedé a todas sus clases cuando quieras. Sin pagos recurrentes ni compromisos.',
@@ -99,33 +86,6 @@ const courseModel = {
     'Sin suscripciones ni renovaciones',
   ],
 };
-
-const faqs = [
-  {
-    q: '¿Cómo puedo acceder a los cursos?',
-    a: 'Solo necesitas crear tu cuenta y comprar el curso que quieras realizar. Una vez adquirido, tendrás acceso inmediato a todas las clases incluidas en ese curso para realizarlas a tu propio ritmo desde tu navegador o dispositivo.',
-  },
-  {
-    q: 'Soy nueva en Pilates, ¿por dónde empiezo?',
-    a: 'Si es tu primera vez, te recomendamos comenzar con un curso para principiantes. Estos programas están diseñados para enseñarte los fundamentos del Pilates paso a paso: respiración, alineación y activación del core.',
-  },
-  {
-    q: '¿Cómo funcionan los pagos?',
-    a: 'Nuestros cursos se compran de forma individual. Cada curso tiene su propio precio y, una vez que lo adquieres, puedes acceder a todas sus clases sin necesidad de pagar una suscripción mensual.',
-  },
-  {
-    q: '¿Hay clases de Pilates prenatal?',
-    a: 'Sí. Disponemos de cursos diseñados especialmente para acompañarte durante el embarazo, con ejercicios suaves y seguros enfocados en movilidad, respiración y bienestar.',
-  },
-  {
-    q: '¿Necesito equipamiento para practicar?',
-    a: 'La mayoría de las clases se pueden realizar solo con una colchoneta. Algunos cursos pueden incluir accesorios opcionales como bandas elásticas, pelota o aro de Pilates, pero no son obligatorios para empezar.',
-  },
-  {
-    q: '¿Cuántas veces por semana debería practicar?',
-    a: 'Para notar resultados, recomendamos practicar entre 3 y 5 veces por semana. La constancia es más importante que la duración de cada sesión, y con el tiempo notarás mejoras en tu fuerza, postura y movilidad.',
-  },
-];
 
 /* ─────────────────────────────────────────────────────────────────
    HELPERS
@@ -165,11 +125,12 @@ function ScrollGallery() {
       const tween = gsap.to(track, {
         x: () => -(track.scrollWidth - window.innerWidth),
         ease: 'none',
+        lazy: true,
         scrollTrigger: {
           trigger: section,
           start: 'top top',
           end: () => `+=${track.scrollWidth - window.innerWidth + window.innerHeight * 0.4}`,
-          scrub: 1.4,
+          scrub: 0.8, // Reduced from 1.4 for snappiness
           pin: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
@@ -288,11 +249,9 @@ function ScrollGallery() {
 ───────────────────────────────────────────────────────────────── */
 
 const Home = () => {
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [openFaq, setOpenFaq]                     = useState(0);
-  const challengesCarouselRef                     = useRef(null);
-  const heroRef                                   = useRef(null);
-  const ctx                                       = useRef(null);
+  const challengesCarouselRef = useRef(null);
+  const heroRef               = useRef(null);
+  const ctx                   = useRef(null);
 
   useEffect(() => {
     const mm = gsap.matchMedia();
@@ -301,7 +260,7 @@ const Home = () => {
       ctx.current = gsap.context(() => {
 
         /* ── Hero — entrada kinética ── */
-        const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+        const tl = gsap.timeline({ defaults: { ease: 'expo.out', lazy: true } });
         tl
           .fromTo('.hero-kicker',
             { opacity: 0, y: 20 },
@@ -397,6 +356,7 @@ const Home = () => {
           ease: 'sine.inOut',
           yoyo: true,
           repeat: -1,
+          lazy: true,
           transformOrigin: 'center bottom',
         });
 
@@ -417,7 +377,7 @@ const Home = () => {
           scrollTrigger: {
             trigger: '.marquee-section',
             start: 'top bottom', end: 'bottom top',
-            scrub: 1.2,
+            scrub: true, // snappy performance
           },
         });
 
@@ -450,16 +410,9 @@ const Home = () => {
       });
     });
 
-    /* ── Testimonial auto-rotate ── */
-    const id = setInterval(
-      () => setActiveTestimonial(p => (p + 1) % communityTestimonials.length),
-      6000
-    );
-
     return () => {
       mm.revert();
       ctx.current?.revert();
-      clearInterval(id);
       ScrollTrigger.getAll().forEach(t => t.kill());
     };
   }, []);
@@ -792,48 +745,14 @@ const Home = () => {
       </section>
 
       {/* ════════════════════════════════════════════════
-          SCROLL GALLERY — reemplaza .loop-images y .section2
+          SCROLL GALLERY
       ════════════════════════════════════════════════ */}
       <ScrollGallery />
 
       {/* ════════════════════════════════════════════════
           COMMUNITY / TESTIMONIALS
       ════════════════════════════════════════════════ */}
-      <section id="community" className="community-section">
-        <div className="container">
-          <div className="section-heading section-heading--center fade-up">
-            <p className="overline">La comunidad más amable</p>
-            <h2 className="h2">
-              <SplitWords text="Cuidamos tu cuerpo" className="reveal-left" />
-              <br />
-              <SplitWords text="y tu bienestar."    className="reveal-right" />
-            </h2>
-          </div>
-          <div className="community-layout">
-            <div className="community-highlight fade-up">
-              <p className="community-lead">
-                "Siento que practico junto a una amiga al otro lado de la pantalla.
-                Las clases son técnicas, efectivas y, sobre todo, amables."
-              </p>
-              <p className="community-note">
-                Correos de motivación, chat de comunidad y eventos especiales
-                hacen que tu práctica se sienta acompañada, aunque estés en casa.
-              </p>
-            </div>
-            <div className="community-testimonials fade-up">
-              {communityTestimonials.map((t, idx) => (
-                <div
-                  key={idx}
-                  className={`community-quote ${idx === activeTestimonial ? 'is-active' : ''}`}
-                >
-                  <p>"{t.text}"</p>
-                  <span>— {t.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <TestimonialsSection SplitWords={SplitWords} />
 
       {/* ════════════════════════════════════════════════
           TEXT BREAK — cita Joseph Pilates
@@ -890,34 +809,7 @@ const Home = () => {
       {/* ════════════════════════════════════════════════
           FAQ
       ════════════════════════════════════════════════ */}
-      <section className="faq-section">
-        <div className="container faq-container">
-          <div className="faq-block fade-up">
-            <p className="overline faq-overline">Preguntas frecuentes</p>
-            <h2 className="h2 faq-title">FAQ</h2>
-          </div>
-          <div className="faq-list">
-            {faqs.map((item, idx) => (
-              <div
-                key={item.q}
-                className={`faq-item ${openFaq === idx ? 'is-open' : ''}`}
-              >
-                <button
-                  type="button"
-                  className="faq-item__question"
-                  onClick={() => setOpenFaq(openFaq === idx ? -1 : idx)}
-                >
-                  <span>{item.q}</span>
-                  <span className="faq-item__icon">{openFaq === idx ? '–' : '+'}</span>
-                </button>
-                <div className="faq-item__answer">
-                  <p>{item.a}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FaqSection />
 
       {/* ════════════════════════════════════════════════
           CTA FINAL

@@ -110,6 +110,7 @@
 .word {
   display: inline-block;
   will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 /* ── BUTTONS ────────────────────────────────────────────────────── */
@@ -185,6 +186,7 @@
   object-position: center 30%;
   display: block;
   will-change: transform;
+  transform: translateZ(0);
 }
 .hero-overlay {
   position: absolute;
@@ -299,6 +301,7 @@
   width: clamp(140px, 18vw, 240px);
   height: auto;
   will-change: transform;
+  transform: translateZ(0);
 }
 
 /* ── MARQUEE ────────────────────────────────────────────────────── */
@@ -316,6 +319,7 @@
   white-space: nowrap;
   width: 200%;
   will-change: transform;
+  transform: translateZ(0);
 }
 .marquee-word {
   font-family: var(--font-display);
@@ -407,8 +411,7 @@
 .method-img-caption {
   position: absolute;
   bottom: 1.5rem; left: 1.5rem;
-  background: rgba(26,25,22,.75);
-  backdrop-filter: blur(10px);
+  background: rgba(26,25,22,.9);
   border: 1px solid rgba(255,255,255,.1);
   border-radius: var(--radius);
   padding: .6rem 1rem;
