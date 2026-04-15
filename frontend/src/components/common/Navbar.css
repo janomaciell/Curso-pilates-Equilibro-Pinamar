@@ -23,7 +23,7 @@
 }
 
 .navbar--transparent .navbar-container,
-.navbar--transparent .navbar-menu li a,
+.navbar--transparent .navbar-menu > li > a,
 .navbar--transparent .navbar-menu .dropdown-toggle,
 .navbar--transparent .btn-login,
 .navbar--transparent .btn-register,
@@ -32,7 +32,7 @@
 }
 
 .navbar--transparent .navbar-logo:hover,
-.navbar--transparent .navbar-menu li a:hover,
+.navbar--transparent .navbar-menu > li > a:hover,
 .navbar--transparent .dropdown-toggle:hover {
   color: #f6d2af;
 }
@@ -49,8 +49,8 @@
 }
 
 .navbar--transparent .navbar-toggle,
-.navbar--transparent .navbar-menu li a,
-.navbar--transparent .dropdown-toggle {
+.navbar--transparent .navbar-menu > li > a,
+.navbar--transparent .navbar-menu .dropdown-toggle {
   color: #fff;
 }
 
