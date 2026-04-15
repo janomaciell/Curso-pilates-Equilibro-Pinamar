@@ -539,7 +539,7 @@
      }
    
      .auth-left {
-       padding: 3rem 2rem;
+       padding: 6rem 2rem;
        gap: 2rem;
      }
    
@@ -551,14 +551,14 @@
      }
    
      .auth-right {
-       padding: 2.5rem 1.5rem;
+       padding: 4rem 1.5rem;
        min-height: 100vh;
      }
    }
    
    @media (max-width: 640px) {
      .auth-left {
-       padding: 2rem 1.5rem;
+       padding: 6rem 1.5rem;
        gap: 1.75rem;
      }
    
