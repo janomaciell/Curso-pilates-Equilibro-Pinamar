@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('payments', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('courses', '0002_initial'),
+        ('clases', '0002_initial'),
     ]
 
     operations = [
@@ -22,22 +22,22 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
-            model_name='courseaccess',
-            name='course',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_accesses', to='courses.course'),
+            model_name='claseaccess',
+            name='clase',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_accesses', to='clases.clase'),
         ),
         migrations.AddField(
-            model_name='courseaccess',
+            model_name='claseaccess',
             name='transaction',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='payments.transaction'),
         ),
         migrations.AddField(
-            model_name='courseaccess',
+            model_name='claseaccess',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='course_accesses', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='clase_accesses', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AlterUniqueTogether(
-            name='courseaccess',
-            unique_together={('user', 'course')},
+            name='claseaccess',
+            unique_together={('user', 'clase')},
         ),
     ]

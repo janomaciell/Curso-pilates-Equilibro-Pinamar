@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { FiFilter } from 'react-icons/fi';
 import Button from '../components/common/Button';
-import './CourseFilter.css';
+import './ClaseFilter.css';
 
-const CourseFilter = ({ onFilterChange }) => {
+const ClaseFilter = ({ onFilterChange }) => {
   const [filters, setFilters] = useState({
     difficulty: '',
     min_price: '',
@@ -33,7 +33,7 @@ const CourseFilter = ({ onFilterChange }) => {
   };
 
   return (
-    <div className="course-filter">
+    <div className="clase-filter">
       <div className="filter-header">
         <FiFilter />
         <h3>Filtros</h3>
@@ -89,4 +89,4 @@ const CourseFilter = ({ onFilterChange }) => {
   );
 };
 
-export default CourseFilter;
+export default ClaseFilter;

@@ -2,7 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from apps.users.models import User
 
-class Course(models.Model):
+class Clase(models.Model):
     DIFFICULTY_CHOICES = [
         ('beginner', 'Principiante'),
         ('intermediate', 'Intermedio'),
@@ -13,7 +13,7 @@ class Course(models.Model):
     slug = models.SlugField('Slug', max_length=200, unique=True)
     description = models.TextField('Descripción')
     short_description = models.CharField('Descripción corta', max_length=300)
-    cover_image = models.ImageField('Imagen de portada', upload_to='courses/covers/')
+    cover_image = models.ImageField('Imagen de portada', upload_to='clases/covers/')
     price = models.DecimalField('Precio', max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     difficulty = models.CharField('Dificultad', max_length=20, choices=DIFFICULTY_CHOICES, default='beginner')
     duration_hours = models.PositiveIntegerField('Duración (horas)', default=0)
@@ -21,12 +21,12 @@ class Course(models.Model):
     is_featured = models.BooleanField('Destacado', default=False)
     created_at = models.DateTimeField('Fecha de creación', auto_now_add=True)
     updated_at = models.DateTimeField('Última actualización', auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='courses_created')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='clases_created')
 
     class Meta:
-        db_table = 'courses'
-        verbose_name = 'Curso'
-        verbose_name_plural = 'Cursos'
+        db_table = 'clases'
+        verbose_name = 'Clase'
+        verbose_name_plural = 'Clases'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -34,16 +34,16 @@ class Course(models.Model):
 
     @property
     def total_lessons(self):
-        return Lesson.objects.filter(module__course=self).count()
+        return Lesson.objects.filter(module__clase=self).count()
 
     @property
     def total_students(self):
-        from apps.payments.models import CourseAccess
-        return CourseAccess.objects.filter(course=self, is_active=True).count()
+        from apps.payments.models import ClaseAccess
+        return ClaseAccess.objects.filter(clase=self, is_active=True).count()
 
 
 class Module(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='modules')
+    clase = models.ForeignKey(Clase, on_delete=models.CASCADE, related_name='modules')
     title = models.CharField('Título', max_length=200)
     description = models.TextField('Descripción', blank=True)
     order = models.PositiveIntegerField('Orden', default=0)
@@ -53,11 +53,11 @@ class Module(models.Model):
         db_table = 'modules'
         verbose_name = 'Módulo'
         verbose_name_plural = 'Módulos'
-        ordering = ['course', 'order']
-        unique_together = ['course', 'order']
+        ordering = ['clase', 'order']
+        unique_together = ['clase', 'order']
 
     def __str__(self):
-        return f"{self.course.title} - {self.title}"
+        return f"{self.clase.title} - {self.title}"
 
 
 class Lesson(models.Model):
@@ -86,7 +86,7 @@ class Lesson(models.Model):
         unique_together = ['module', 'order']
 
     def __str__(self):
-        return f"{self.module.course.title} - {self.module.title} - {self.title}"
+        return f"{self.module.clase.title} - {self.module.title} - {self.title}"
 
 
 class LessonProgress(models.Model):

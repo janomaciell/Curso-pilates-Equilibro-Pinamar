@@ -71,16 +71,16 @@ const collections = [
   { title: 'Calming',          desc: 'Secuencias suaves para calmar el sistema nervioso y aterrizar el día.' },
   { title: 'Posture',          desc: 'Clases enfocadas en alineación y prevención de dolores crónicos.' },
   { title: 'Small Equipment',  desc: 'Usa pelota, bandas, aro mágico y más para desafiar tu cuerpo.' },
-  { title: 'Signature Classes',desc: 'Flujos creativos que combinan técnica clásica y secuencias modernas.' },
-  { title: 'Dynamic',          desc: 'Pilates más atlético y enérgico para cuando querés sudar.' },
-  { title: 'Meditación',       desc: 'Prácticas breves para acompañar tu movimiento con presencia.' },
+  { title: 'Dynamic Pilates',  desc: 'Pilates más atlético y enérgico para cuando querés sudar.' },
+  { title: 'Funcional',        desc: 'Entrenamiento dinámico para mejorar fuerza, agilidad y coordinación.' },
+  { title: 'Hipopresivos',     desc: 'Técnicas de respiración y postura para fortalecer el core profundo.' },
 ];
 
-const courseModel = {
-  title: 'Un solo pago por curso',
-  desc: 'Elegí el curso que quieras y accedé a todas sus clases cuando quieras. Sin pagos recurrentes ni compromisos.',
+const claseModel = {
+  title: 'Un solo pago por clase',
+  desc: 'Elegí el clase que quieras y accedé a todas sus clases cuando quieras. Sin pagos recurrentes ni compromisos.',
   features: [
-    'Acceso completo al curso que compres',
+    'Acceso completo al clase que compres',
     'Todas las clases en video, a tu ritmo',
     'Disponible desde tu navegador o dispositivo',
     'Sin suscripciones ni renovaciones',
@@ -230,8 +230,8 @@ function ScrollGallery() {
         {/* Slide de outro */}
         <div className="sg-outro">
           <p className="sg-outro__label">¿Lista para empezar?</p>
-          <Link to="/cursos" className="sg-outro__btn">
-            Ver cursos
+          <Link to="/clases" className="sg-outro__btn">
+            Ver clases
             <svg width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true">
               <path d="M0 5h14M9 1l5 4-5 4" stroke="currentColor" strokeWidth="1.4"
                 strokeLinecap="round" strokeLinejoin="round" />
@@ -269,6 +269,11 @@ const Home = () => {
           .fromTo('.hero-title .word',
             { yPercent: 110, opacity: 0 },
             { yPercent: 0, opacity: 1, stagger: 0.06, duration: 1.1 },
+            '-=0.6'
+          )
+          .fromTo('.hero-author-name',
+            { opacity: 0, y: 10 },
+            { opacity: 1, y: 0, duration: 0.8 },
             '-=0.6'
           )
           .fromTo('.hero-tagline',
@@ -432,24 +437,26 @@ const Home = () => {
         <div className="hero-inner-home">
           <p className="hero-kicker">
             <span className="kicker-dot" />
-            Tu estudio de Pilates online
+            Tu plataforma de entrenamiento online
           </p>
 
           <h1 className="hero-title">
             <SplitWords text="Equilibrio"  className="hero-title__line" />
             <SplitWords text="Pinamar"     className="hero-title__line hero-title__line--italic" />
+            <span className="hero-author-name">por Nadia D'Angelo</span>
           </h1>
 
           <div className="hero-line" />
 
           <p className="hero-tagline">
-            La coordinación completa de mente, cuerpo y espíritu.
-            Pilates online con precisión clínica desde casa.
+            Súmate a nuestra plataforma de entrenamiento online y descubrí nuevas formas de sentirte mejor tanto física como emocionalmente.
+            Clases diseñadas para adaptarse a tu ritmo de vida, con la flexibilidad de entrenar dónde y cuándo quieras.
+            Empieza hoy y convertí el cuidado de tu cuerpo en parte de tu día a día.
           </p>
 
           <div className="hero-ctas">
-            <Link to="/cursos" className="btn-primary">
-              Ver cursos <FiArrowRight size={15} />
+            <Link to="/clases" className="btn-primary">
+              Ver clases <FiArrowRight size={15} />
             </Link>
             <Link to="/como-funciona" className="btn-ghost">
               <FiPlay size={14} />
@@ -651,7 +658,7 @@ const Home = () => {
             <ul className="about-list stagger-group">
               {[
                 'Clases para todos los niveles, desde principiante absoluto.',
-                'Cursos organizados por nivel, duración y enfoque.',
+                'Clases organizados por nivel, duración y enfoque.',
                 'Una comunidad amable que te acompaña en cada paso.',
               ].map(t => (
                 <li key={t} className="stagger-item">
@@ -778,30 +785,30 @@ const Home = () => {
           <div className="section-heading section-heading--center fade-up">
             <p className="overline">Cómo funciona</p>
             <h2 className="h2">
-              <SplitWords text="Elegí tu curso"          className="reveal-left" />
+              <SplitWords text="Elegí tu clase"          className="reveal-left" />
               <br />
               <SplitWords text="y practicá a tu ritmo."  className="reveal-right" />
             </h2>
           </div>
           <div className="pricing-grid pricing-grid--single stagger-group">
             <article className="pricing-card pricing-card--highlight stagger-item">
-              <h3 className="pricing-card__name">{courseModel.title}</h3>
-              <p className="pricing-card__desc">{courseModel.desc}</p>
+              <h3 className="pricing-card__name">{claseModel.title}</h3>
+              <p className="pricing-card__desc">{claseModel.desc}</p>
               <ul className="pricing-card__features">
-                {courseModel.features.map(f => (
+                {claseModel.features.map(f => (
                   <li key={f}>
                     <FiCheckCircle size={14} />
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <Link to="/cursos" className="btn-primary">
-                Ver cursos disponibles <FiArrowRight />
+              <Link to="/clases" className="btn-primary">
+                Ver clases disponibles <FiArrowRight />
               </Link>
             </article>
           </div>
           <p className="pricing-fineprint fade-up">
-            Cada curso tiene su precio. Un solo pago, acceso para siempre a ese curso.
+            Cada clase tiene su precio. Un solo pago, acceso para siempre a ese clase.
           </p>
         </div>
       </section>
@@ -823,12 +830,12 @@ const Home = () => {
             <SplitWords text="empieza hoy." className="reveal-right" />
           </h2>
           <p className="cta-text fade-up">
-            Elegí el curso que más te motive y accedé a sus clases cuando quieras,
+            Elegí el clase que más te motive y accedé a sus clases cuando quieras,
             con una comunidad que te acompaña en cada movimiento.
           </p>
           <div className="cta-actions fade-up">
-            <Link to="/cursos" className="btn-primary btn-primary--lg">
-              Ver cursos disponibles <FiArrowRight />
+            <Link to="/clases" className="btn-primary btn-primary--lg">
+              Ver clases disponibles <FiArrowRight />
             </Link>
             <Link to="/login" className="btn-ghost">
               Ya tengo cuenta <FiArrowRight size={14} />

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { coursesAPI } from '../../api/courses';
-import VideoPlayer from '../../courses/VideoPlayer';
+import { clasesAPI } from '../../api/clases';
+import VideoPlayer from '../../clases/VideoPlayer';
 import Loader from '../../components/common/Loader';
 import {
   FiChevronLeft,
@@ -17,7 +17,7 @@ import {
   FiMenu,
 } from 'react-icons/fi';
 import gsap from 'gsap';
-import './CoursePlayer.css';
+import './ClasePlayer.css';
 
 /* ─── Helpers ──────────────────────────────────────────────────────── */
 const getResourceIcon = (type) => {
@@ -38,16 +38,16 @@ const getResourceIcon = (type) => {
 /* Tabs — mismos íconos que el HTML */
 const TABS = [
   { id: 'overview',  label: 'Descripción',  icon: FiInfo },
-  { id: 'resources', label: 'Recursos',     icon: FiFolder },
+  { id: 'resources', label: 'Reclases',     icon: FiFolder },
 ];
 
 /* ─── Componente ───────────────────────────────────────────────────── */
-const CoursePlayer = () => {
-  const { courseId } = useParams();
+const ClasePlayer = () => {
+  const { claseId } = useParams();
   const navigate     = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [course, setCourse]                 = useState(null);
+  const [clase, setClase]                 = useState(null);
   const [modules, setModules]               = useState([]);
   const [currentLesson, setCurrentLesson]   = useState(null);
   const [progress, setProgress]             = useState({});
@@ -65,7 +65,7 @@ const CoursePlayer = () => {
   const currentLessonRef = useRef(currentLesson);
   useEffect(() => { currentLessonRef.current = currentLesson; }, [currentLesson]);
 
-  useEffect(() => { loadCourseData(); }, [courseId]);
+  useEffect(() => { loadClaseData(); }, [claseId]);
 
   useEffect(() => {
     if (!loading) {
@@ -102,15 +102,15 @@ const CoursePlayer = () => {
   }, [currentLesson, modules]);
 
   /* ── API ── */
-  const loadCourseData = async () => {
+  const loadClaseData = async () => {
     try {
       setLoading(true);
-      const [courseData, modulesData, progressData] = await Promise.all([
-        coursesAPI.getCourseBySlug(courseId),
-        coursesAPI.getCourseModules(courseId),
-        coursesAPI.getLessonProgress(courseId),
+      const [claseData, modulesData, progressData] = await Promise.all([
+        clasesAPI.getClaseBySlug(claseId),
+        clasesAPI.getClaseModules(claseId),
+        clasesAPI.getLessonProgress(claseId),
       ]);
-      setCourse(courseData);
+      setClase(claseData);
       const modulesList = Array.isArray(modulesData) ? modulesData : [];
       setModules(modulesList);
       const progressList = Array.isArray(progressData) ? progressData : (progressData?.results ?? []);
@@ -138,8 +138,8 @@ const CoursePlayer = () => {
       const firstIncomplete = findFirstIncomplete(modulesList, progressMap);
       setCurrentLesson(firstIncomplete || modulesList[0]?.lessons?.[0] || null);
     } catch (error) {
-      console.error('Error al cargar curso:', error);
-      navigate('/mis-cursos');
+      console.error('Error al cargar clase:', error);
+      navigate('/mis-clases');
     } finally {
       setLoading(false);
     }
@@ -147,12 +147,12 @@ const CoursePlayer = () => {
 
   const loadResources = async (lessonId) => {
     try {
-      const data = await coursesAPI.getLessonDocuments(lessonId);
+      const data = await clasesAPI.getLessonDocuments(lessonId);
       // data puede ser array directo o { results: [...] }
       const list = Array.isArray(data) ? data : (data?.results ?? []);
       setResources(list);
     } catch (e) {
-      console.warn('No se pudieron cargar los recursos:', e);
+      console.warn('No se pudieron cargar los reclases:', e);
       setResources([]);
     }
   };
@@ -196,7 +196,7 @@ const CoursePlayer = () => {
       [lesson.id]: { ...prev[lesson.id], progress_percentage: pct, completed: isCompleted },
     }));
     try {
-      await coursesAPI.updateLessonProgress({ lesson: lesson.id, progress_percentage: pct, completed: isCompleted });
+      await clasesAPI.updateLessonProgress({ lesson: lesson.id, progress_percentage: pct, completed: isCompleted });
     } catch (e) { console.error(e); }
   }, []);
 
@@ -224,12 +224,12 @@ const CoursePlayer = () => {
 
   /* ── Guards ── */
   if (loading) return <Loader fullScreen />;
-  if (!course || !currentLesson) return (
+  if (!clase || !currentLesson) return (
     <div className="player-error">
       <div className="error-icon">📚</div>
       <h2>No se pudo cargar el contenido</h2>
-      <p>No pudimos obtener la información del curso.</p>
-      <button onClick={() => navigate('/mis-cursos')} className="error-btn">Volver a mis cursos</button>
+      <p>No pudimos obtener la información del clase.</p>
+      <button onClick={() => navigate('/mis-clases')} className="error-btn">Volver a mis clases</button>
     </div>
   );
 
@@ -240,23 +240,23 @@ const CoursePlayer = () => {
 
   /* ══════════════════════════ RENDER ═══════════════════════════════ */
   return (
-    <div className="course-player-page">
+    <div className="clase-player-page">
 
       {/* ══════ HEADER ══════
           Blanco, border-b, flex-row, progress bar central + trophy icon
           Réplica 1:1 del <header> del HTML de referencia               */}
       <header className="cp-header">
 
-        {/* Left: back + divider + course title */}
+        {/* Left: back + divider + clase title */}
         <div className="cp-header-left">
-          <button className="cp-back-btn" onClick={() => navigate('/mis-cursos')}>
+          <button className="cp-back-btn" onClick={() => navigate('/mis-clases')}>
             <FiChevronLeft />
           </button>
           <div className="cp-divider" />
-          <div className="cp-course-info">
-            <h2 className="cp-course-title">{course.title}</h2>
+          <div className="cp-clase-info">
+            <h2 className="cp-clase-title">{clase.title}</h2>
             {currentModule && (
-              <p className="cp-course-chapter">{currentModule.title}</p>
+              <p className="cp-clase-chapter">{currentModule.title}</p>
             )}
           </div>
         </div>
@@ -276,13 +276,13 @@ const CoursePlayer = () => {
           <button
             className="cp-open-sb-btn"
             onClick={() => setSidebarOpen(true)}
-            aria-label="Abrir contenido del curso"
-            title="Contenido del curso"
+            aria-label="Abrir contenido del clase"
+            title="Contenido del clase"
           >
             <FiMenu />
           </button>
 
-          <button className="cp-dashboard-btn" onClick={() => navigate('/mis-cursos')}>
+          <button className="cp-dashboard-btn" onClick={() => navigate('/mis-clases')}>
             <FiLayers />
             <span>Panel</span>
           </button>
@@ -359,7 +359,7 @@ const CoursePlayer = () => {
                 <h3 className="cp-prose-h3">Sobre esta lección</h3>
                 <p className="cp-prose-p">
                   {currentLesson.description ||
-                    "En esta lección exploramos los conceptos fundamentales del contenido del curso. Seguí el material y avanzá a tu propio ritmo."}
+                    "En esta lección exploramos los conceptos fundamentales del contenido del clase. Seguí el material y avanzá a tu propio ritmo."}
                 </p>
 
                 {/* Grid 2 columnas — réplica exacta del HTML */}
@@ -374,7 +374,7 @@ const CoursePlayer = () => {
                     <ul className="cp-ov-list">
                       {(currentLesson.learning_points?.length > 0
                         ? currentLesson.learning_points
-                        : ['Conceptos fundamentales de la lección', 'Aplicación práctica paso a paso', 'Recursos y materiales de apoyo']
+                        : ['Conceptos fundamentales de la lección', 'Aplicación práctica paso a paso', 'Reclases y materiales de apoyo']
                       ).map((p, i) => (
                         <li key={i}>
                           <span className="cp-ov-check">✓</span>
@@ -409,7 +409,7 @@ const CoursePlayer = () => {
             {activeTab === 'resources' && (
               <div className="cp-resources">
                 {resources.length === 0
-                  ? <div className="cp-empty"><FiFolder style={{ width: 32, height: 32, opacity: 0.3 }} /><p>No hay recursos para esta lección.</p></div>
+                  ? <div className="cp-empty"><FiFolder style={{ width: 32, height: 32, opacity: 0.3 }} /><p>No hay reclases para esta lección.</p></div>
                   : resources.map(res => {
                       const { icon, cls, label } = getResourceIcon(res.file_type || res.type);
                       const downloadUrl = res.file_url || res.url || '#';
@@ -447,7 +447,7 @@ const CoursePlayer = () => {
 
           {/* Sidebar header */}
           <div className="cp-sb-hd">
-            <h3 className="cp-sb-title">Contenido del curso</h3>
+            <h3 className="cp-sb-title">Contenido del clase</h3>
             <p className="cp-sb-meta">{modules.length} Módulos • {totalLessons} Lecciones</p>
           </div>
 
@@ -537,4 +537,4 @@ const CoursePlayer = () => {
   );
 };
 
-export default CoursePlayer;
+export default ClasePlayer;

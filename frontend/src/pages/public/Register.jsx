@@ -72,7 +72,7 @@ const Register = () => {
 
   const steps = [
     { number: '1', text: 'Creá tu cuenta' },
-    { number: '2', text: 'Elegí tu curso' },
+    { number: '2', text: 'Elegí tu clase' },
     { number: '3', text: 'Comenzá a aprender' },
   ];
 

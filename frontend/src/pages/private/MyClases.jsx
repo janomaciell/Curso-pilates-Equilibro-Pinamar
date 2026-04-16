@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { paymentsAPI } from '../../api/payments';
-import { coursesAPI } from '../../api/courses';
-import VideoPlayer from '../../courses/VideoPlayer';
+import { clasesAPI } from '../../api/clases';
+import VideoPlayer from '../../clases/VideoPlayer';
 import Loader from '../../components/common/Loader';
 import NgrokImage from '../../components/common/NgrokImage';
 import { 
@@ -19,42 +19,42 @@ import {
 } from 'react-icons/fi';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import '../public/CourseCatalog.css';
-import './MyCourses.css';
+import '../public/ClaseCatalog.css';
+import './MyClases.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const MyCourses = () => {
-  const [courses, setCourses] = useState([]);
-  const [filteredCourses, setFilteredCourses] = useState([]);
+const MyClases = () => {
+  const [clases, setClases] = useState([]);
+  const [filteredClases, setFilteredClases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, in-progress, completed
   const [viewMode, setViewMode] = useState('grid'); // grid, list
   const [sortBy, setSortBy] = useState('recent'); // recent, progress, title
   const [playerOpen, setPlayerOpen] = useState(false);
   const [playerLoading, setPlayerLoading] = useState(false);
-  const [playerCourse, setPlayerCourse] = useState(null);
+  const [playerClase, setPlayerClase] = useState(null);
   const [playerLesson, setPlayerLesson] = useState(null);
   
   const statsRef = useRef([]);
   const cardsRef = useRef([]);
 
   useEffect(() => {
-    loadMyCourses();
+    loadMyClases();
   }, []);
 
-  // Animación del hero (mismo estilo que /cursos)
+  // Animación del hero (mismo estilo que /clases)
   useEffect(() => {
     const tl = gsap.timeline({ delay: 0.05 });
-    tl.fromTo('.my-courses-hero .hero-eyebrow', { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' })
-      .fromTo('.my-courses-hero .catalog-hero-title-mycourses', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.4')
-      .fromTo('.my-courses-hero .hero-sub', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.5');
+    tl.fromTo('.my-clases-hero .hero-eyebrow', { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' })
+      .fromTo('.my-clases-hero .catalog-hero-title-myclases', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.4')
+      .fromTo('.my-clases-hero .hero-sub', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.5');
     return () => tl.kill();
   }, []);
 
   useEffect(() => {
     // Animaciones de entrada para stats, filtros y cards
-    if (!loading && courses.length > 0) {
+    if (!loading && clases.length > 0) {
       const tl = gsap.timeline({ delay: 0.2 });
 
       tl.fromTo('.stats-grid',
@@ -66,17 +66,17 @@ const MyCourses = () => {
         { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
         '-=0.2'
       )
-      .fromTo('.my-course-card',
+      .fromTo('.my-clase-card',
         { opacity: 0, y: 30 },
         { opacity: 1, y: 0, stagger: 0.1, duration: 0.5, ease: 'power2.out' },
         '-=0.1'
       );
     }
-  }, [loading, courses]);
+  }, [loading, clases]);
 
   useEffect(() => {
-    // Filtrar y ordenar cursos
-    let filtered = [...courses];
+    // Filtrar y ordenar clases
+    let filtered = [...clases];
 
     // Filtro
     if (filter === 'in-progress') {
@@ -89,31 +89,31 @@ const MyCourses = () => {
     if (sortBy === 'progress') {
       filtered.sort((a, b) => b.progress - a.progress);
     } else if (sortBy === 'title') {
-      filtered.sort((a, b) => a.course.title.localeCompare(b.course.title));
+      filtered.sort((a, b) => a.clase.title.localeCompare(b.clase.title));
     } else {
       // recent - por fecha de compra
       filtered.sort((a, b) => new Date(b.purchased_at) - new Date(a.purchased_at));
     }
 
-    setFilteredCourses(filtered);
+    setFilteredClases(filtered);
 
     // Animar cambio
-    if (courses.length > 0) {
-      gsap.fromTo('.my-course-card',
+    if (clases.length > 0) {
+      gsap.fromTo('.my-clase-card',
         { opacity: 0, y: 10 },
         { opacity: 1, y: 0, stagger: 0.05, duration: 0.3, ease: 'power2.out' }
       );
     }
-  }, [filter, sortBy, courses]);
+  }, [filter, sortBy, clases]);
 
-  const loadMyCourses = async () => {
+  const loadMyClases = async () => {
     try {
-      const data = await paymentsAPI.getMyCourses();
+      const data = await paymentsAPI.getMyClases();
       const list = Array.isArray(data) ? data : (data?.results ?? []);
-      setCourses(list);
-      setFilteredCourses(list);
+      setClases(list);
+      setFilteredClases(list);
     } catch (error) {
-      console.error('Error al cargar cursos:', error);
+      console.error('Error al cargar clases:', error);
     } finally {
       setLoading(false);
     }
@@ -128,15 +128,15 @@ const MyCourses = () => {
   };
 
   const calculateStats = () => {
-    if (courses.length === 0) return null;
+    if (clases.length === 0) return null;
 
-    const totalProgress = courses.reduce((sum, c) => sum + c.progress, 0);
-    const avgProgress = Math.round(totalProgress / courses.length);
-    const completed = courses.filter(c => c.progress === 100).length;
-    const inProgress = courses.filter(c => c.progress > 0 && c.progress < 100).length;
+    const totalProgress = clases.reduce((sum, c) => sum + c.progress, 0);
+    const avgProgress = Math.round(totalProgress / clases.length);
+    const completed = clases.filter(c => c.progress === 100).length;
+    const inProgress = clases.filter(c => c.progress > 0 && c.progress < 100).length;
 
     return {
-      total: courses.length,
+      total: clases.length,
       avgProgress,
       completed,
       inProgress
@@ -157,12 +157,12 @@ const MyCourses = () => {
     try {
       setPlayerOpen(true);
       setPlayerLoading(true);
-      setPlayerCourse(access.course);
+      setPlayerClase(access.clase);
       setPlayerLesson(null);
 
       const [modulesData, progressData] = await Promise.all([
-        coursesAPI.getCourseModules(access.course.id),
-        coursesAPI.getLessonProgress(access.course.id)
+        clasesAPI.getClaseModules(access.clase.id),
+        clasesAPI.getLessonProgress(access.clase.id)
       ]);
 
       const modulesList = Array.isArray(modulesData) ? modulesData : [];
@@ -183,7 +183,7 @@ const MyCourses = () => {
   const closeInlinePlayer = () => {
     setPlayerOpen(false);
     setPlayerLesson(null);
-    setPlayerCourse(null);
+    setPlayerClase(null);
   };
 
   const handleInlineProgress = async (progressPercentage) => {
@@ -191,45 +191,45 @@ const MyCourses = () => {
     const isCompleted = progressPercentage >= 90;
 
     try {
-      await coursesAPI.updateLessonProgress({
+      await clasesAPI.updateLessonProgress({
         lesson: playerLesson.id,
         progress_percentage: progressPercentage,
         completed: isCompleted
       });
 
       if (isCompleted) {
-        loadMyCourses();
+        loadMyClases();
       }
     } catch (error) {
-      console.error('Error al actualizar progreso desde Mis Cursos:', error);
+      console.error('Error al actualizar progreso desde Mis Clases:', error);
     }
   };
 
   const stats = calculateStats();
 
   return (
-    <div className="my-courses-page">
-      {/* Hero con mismo estilo que /cursos */}
-      <section className="catalog-hero my-courses-hero">
+    <div className="my-clases-page">
+      {/* Hero con mismo estilo que /clases */}
+      <section className="catalog-hero my-clases-hero">
         <div className="hero-gradient" />
         <div className="hero-grain" />
         <div className="hero-inner">
           <span className="hero-eyebrow">— Equilibrio Pinamar</span>
-          <h1 className="catalog-hero-title-mycourses">
-            Mis Cursos<br />
+          <h1 className="catalog-hero-title-myclases">
+            Mis Clases<br />
             <em>Tu espacio personal de aprendizaje y crecimiento</em>
           </h1>
           <p className="hero-sub">
-            Tus cursos comprados, listos para continuar cuando quieras.
+            Tus clases comprados, listos para continuar cuando quieras.
           </p>
         </div>
         <div className="hero-fade-bottom" />
       </section>
 
-      <div className="my-courses-container">
+      <div className="my-clases-container">
         {loading ? (
           <Loader fullScreen={false} />
-        ) : courses.length > 0 ? (
+        ) : clases.length > 0 ? (
           <>
             {/* Stats Grid */}
             <div className="stats-grid">
@@ -239,7 +239,7 @@ const MyCourses = () => {
                 </div>
                 <div className="stat-content">
                   <div className="stat-value">{stats.total}</div>
-                  <div className="stat-label">Cursos Activos</div>
+                  <div className="stat-label">Clases Activos</div>
                 </div>
               </div>
 
@@ -329,23 +329,23 @@ const MyCourses = () => {
 
             {/* Results Count */}
             <div className="results-count">
-              Mostrando <strong>{filteredCourses.length}</strong> de <strong>{courses.length}</strong> cursos
+              Mostrando <strong>{filteredClases.length}</strong> de <strong>{clases.length}</strong> clases
             </div>
 
-            {/* Courses Grid/List */}
-            <div className={`my-courses-grid ${viewMode === 'list' ? 'list-view' : ''}`}>
-              {filteredCourses.map((access, index) => (
+            {/* Clases Grid/List */}
+            <div className={`my-clases-grid ${viewMode === 'list' ? 'list-view' : ''}`}>
+              {filteredClases.map((access, index) => (
                 <div 
                   key={access.id} 
-                  className="my-course-card" 
+                  className="my-clase-card" 
                   ref={el => cardsRef.current[index] = el}
                 >
-                  <Link to={`/curso/${access.course.id}/player`} className="course-image-wrapper">
+                  <Link to={`/clase/${access.clase.id}/player`} className="clase-image-wrapper">
                     <NgrokImage 
-                      src={access.course.cover_image}
-                      alt={access.course.title}
+                      src={access.clase.cover_image}
+                      alt={access.clase.title}
                     />
-                    <div className="course-overlay">
+                    <div className="clase-overlay">
                       <div className="play-button">
                         <FiPlay />
                       </div>
@@ -363,19 +363,19 @@ const MyCourses = () => {
                     )}
                   </Link>
 
-                  <div className="course-info">
-                    <Link to={`/curso/${access.course.id}/player`}>
-                      <h3 className="course-title">{access.course.title}</h3>
+                  <div className="clase-info">
+                    <Link to={`/clase/${access.clase.id}/player`}>
+                      <h3 className="clase-title">{access.clase.title}</h3>
                     </Link>
                     
-                    <p className="course-short-desc">{access.course.short_description}</p>
+                    <p className="clase-short-desc">{access.clase.short_description}</p>
 
-                    <div className="course-meta">
+                    <div className="clase-meta">
                       <span className="meta-item">
-                        <FiClock /> {access.course.duration_hours}h
+                        <FiClock /> {access.clase.duration_hours}h
                       </span>
                       <span className="meta-item">
-                        <FiBook /> {access.course.total_lessons} lecciones
+                        <FiBook /> {access.clase.total_lessons} lecciones
                       </span>
                     </div>
 
@@ -392,7 +392,7 @@ const MyCourses = () => {
                       </div>
                     </div>
 
-                    <div className="course-footer">
+                    <div className="clase-footer">
                       <span className="purchase-date">
                         <FiClock />
                         {formatDate(access.purchased_at)}
@@ -405,7 +405,7 @@ const MyCourses = () => {
                         {access.progress === 0 ? (
                           <>
                             <FiPlay />
-                            Empezar Curso
+                            Empezar Clase
                           </>
                         ) : access.progress === 100 ? (
                           <>
@@ -426,7 +426,7 @@ const MyCourses = () => {
             </div>
           </>
         ) : (
-          <div className="empty-courses">
+          <div className="empty-clases">
             <div className="empty-illustration">
               <div className="empty-icon">
                 <FiBook />
@@ -435,44 +435,44 @@ const MyCourses = () => {
               <div className="empty-circle circle-2"></div>
               <div className="empty-circle circle-3"></div>
             </div>
-            <h2 className="empty-title">Aún no tienes cursos</h2>
+            <h2 className="empty-title">Aún no tienes clases</h2>
             <p className="empty-text">
               Explora nuestro catálogo y comienza tu camino en el Pilates hoy mismo.<br />
               Más de 500 alumnas ya están practicando.
             </p>
-            <Link to="/cursos" className="browse-button">
+            <Link to="/clases" className="browse-button">
               <FiBook />
-              Explorar Cursos
+              Explorar Clases
             </Link>
           </div>
         )}
       </div>
       {playerOpen && (
-        <div className="mycourses-player-overlay">
+        <div className="myclases-player-overlay">
           <div
-            className="mycourses-player-backdrop"
+            className="myclases-player-backdrop"
             onClick={closeInlinePlayer}
           ></div>
-          <div className="mycourses-player-modal">
+          <div className="myclases-player-modal">
             <button
               type="button"
-              className="mycourses-player-close"
+              className="myclases-player-close"
               onClick={closeInlinePlayer}
               aria-label="Cerrar reproductor"
             >
               ×
             </button>
-            {playerCourse && (
-              <div className="mycourses-player-header">
-                <h2>{playerCourse.title}</h2>
+            {playerClase && (
+              <div className="myclases-player-header">
+                <h2>{playerClase.title}</h2>
                 {playerLesson && (
                   <p>{playerLesson.title}</p>
                 )}
               </div>
             )}
-            <div className="mycourses-player-body">
+            <div className="myclases-player-body">
               {playerLoading || !playerLesson ? (
-                <div className="mycourses-player-loading">
+                <div className="myclases-player-loading">
                   <Loader />
                   <p>Cargando lección...</p>
                 </div>
@@ -490,4 +490,4 @@ const MyCourses = () => {
   );
 };
 
-export default MyCourses;
+export default MyClases;

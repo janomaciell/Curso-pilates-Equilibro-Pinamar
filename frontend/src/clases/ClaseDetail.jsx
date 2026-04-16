@@ -7,7 +7,7 @@ import {
 import NgrokImage from '../components/common/NgrokImage';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import './CourseDetail.css';
+import './ClaseDetail.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -36,7 +36,7 @@ const formatPrice = (p) =>
 
 /* ─── component ────────────────────────────────────────────────── */
 
-const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} }) => {
+const ClaseDetail = ({ clase, hasAccess, onPurchase, loading, progress = {} }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,7 +67,7 @@ const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} })
 
   const getAllLessons = () => {
     const all = [];
-    (course.modules || []).forEach(m => (m.lessons || []).forEach(l => all.push(l)));
+    (clase.modules || []).forEach(m => (m.lessons || []).forEach(l => all.push(l)));
     return all;
   };
   const isUnlocked = (lesson) => {
@@ -78,10 +78,10 @@ const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} })
   };
   const handleLessonClick = (lesson) => {
     if (!hasAccess || !isUnlocked(lesson)) return;
-    navigate(`/curso/${course.id}/player?lesson=${lesson.id}`);
+    navigate(`/clase/${clase.id}/player?lesson=${lesson.id}`);
   };
 
-  const diff = DIFFICULTY[course.difficulty] || { label: course.difficulty, color: '#b98967' };
+  const diff = DIFFICULTY[clase.difficulty] || { label: clase.difficulty, color: '#b98967' };
 
   return (
     <div className="cd-page">
@@ -94,7 +94,7 @@ const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} })
 
         {/* Fondo */}
         <div className="cd-hero-bg" aria-hidden="true">
-          <NgrokImage src={course.cover_image} alt="" />
+          <NgrokImage src={clase.cover_image} alt="" />
           <div className="cd-hero-bg__overlay" />
         </div>
 
@@ -113,17 +113,17 @@ const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} })
             </div>
 
             <h1 className="cd-title">
-              <SplitWords text={course.title} />
+              <SplitWords text={clase.title} />
             </h1>
 
-            <p className="cd-hero-desc">{course.short_description}</p>
+            <p className="cd-hero-desc">{clase.short_description}</p>
 
             <div className="cd-meta">
-              <span className="cd-meta-item"><FiClock size={14} /> {course.duration_hours}h</span>
+              <span className="cd-meta-item"><FiClock size={14} /> {clase.duration_hours}h</span>
               <span className="cd-meta-sep">·</span>
-              <span className="cd-meta-item"><FiBook size={14} /> {course.total_lessons} lecciones</span>
+              <span className="cd-meta-item"><FiBook size={14} /> {clase.total_lessons} lecciones</span>
               <span className="cd-meta-sep">·</span>
-              <span className="cd-meta-item"><FiUsers size={14} /> {course.total_students} estudiantes</span>
+              <span className="cd-meta-item"><FiUsers size={14} /> {clase.total_students} estudiantes</span>
               <span className="cd-meta-sep">·</span>
               <span className="cd-meta-item"><FiAward size={14} /> Certificado</span>
             </div>
@@ -143,16 +143,16 @@ const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} })
                   </div>
                   <button
                     className="cd-btn-buy"
-                    onClick={() => navigate(`/curso/${course.id}/player`)}
+                    onClick={() => navigate(`/clase/${clase.id}/player`)}
                   >
-                    <FiPlay size={14} /> Comenzar curso
+                    <FiPlay size={14} /> Comenzar clase
                   </button>
                 </>
               ) : (
                 <>
                   <div className="cd-price-block">
                     <span className="cd-price-label">Inversión única</span>
-                    <span className="cd-price">{formatPrice(course.price)}</span>
+                    <span className="cd-price">{formatPrice(clase.price)}</span>
                   </div>
 
                   <button className="cd-btn-buy" onClick={onPurchase} disabled={loading}>
@@ -189,12 +189,12 @@ const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} })
         <div className="cd-body-inner">
 
           {/* Objetivos */}
-          {course.learning_objectives?.length > 0 && (
+          {clase.learning_objectives?.length > 0 && (
             <section className="cd-section cd-section--tinted">
               <p className="cd-overline">Lo que aprenderás</p>
-              <h2 className="cd-section-title">Objetivos del curso</h2>
+              <h2 className="cd-section-title">Objetivos del clase</h2>
               <div className="cd-objectives-grid">
-                {course.learning_objectives.map((obj, i) => (
+                {clase.learning_objectives.map((obj, i) => (
                   <div key={i} className="cd-objective">
                     <FiCheckCircle size={15} className="cd-obj-icon" />
                     <span>{obj}</span>
@@ -207,18 +207,18 @@ const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} })
           {/* Descripción */}
           <section className="cd-section">
             <p className="cd-overline">Descripción</p>
-            <h2 className="cd-section-title">Sobre este curso</h2>
-            <p className="cd-desc-text">{course.description}</p>
+            <h2 className="cd-section-title">Sobre este clase</h2>
+            <p className="cd-desc-text">{clase.description}</p>
           </section>
 
           {/* Módulos */}
           <section className="cd-section">
             <p className="cd-overline">Programa</p>
-            <h2 className="cd-section-title">Contenido del curso</h2>
+            <h2 className="cd-section-title">Contenido del clase</h2>
 
-            {course.modules?.length > 0 ? (
+            {clase.modules?.length > 0 ? (
               <div className="cd-modules-list">
-                {course.modules.map((mod, mi) => (
+                {clase.modules.map((mod, mi) => (
                   <div key={mod.id} className="cd-module">
                     <div className="cd-module-head">
                       <span className="cd-module-num">Módulo {mi + 1}</span>
@@ -292,17 +292,17 @@ const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} })
                   <em>desde el primer día.</em>
                 </h2>
                 <p className="cd-cta-sub">
-                  Unite a {course.total_students} estudiantes que ya están aprendiendo
+                  Unite a {clase.total_students} estudiantes que ya están aprendiendo
                 </p>
               </div>
               <div className="cd-cta-action">
-                <span className="cd-cta-price">{formatPrice(course.price)}</span>
+                <span className="cd-cta-price">{formatPrice(clase.price)}</span>
                 <button
                   className="cd-btn-buy cd-btn-buy--light"
                   onClick={onPurchase}
                   disabled={loading}
                 >
-                  {loading ? 'Procesando...' : <>Comprar curso <FiArrowRight size={14} /></>}
+                  {loading ? 'Procesando...' : <>Comprar clase <FiArrowRight size={14} /></>}
                 </button>
               </div>
             </section>
@@ -314,4 +314,4 @@ const CourseDetail = ({ course, hasAccess, onPurchase, loading, progress = {} })
   );
 };
 
-export default CourseDetail;
+export default ClaseDetail;

@@ -1,8 +1,8 @@
 import api from './axios';
 
 export const paymentsAPI = {
-  createPayment: async (courseId) => {
-    const response = await api.post('/payments/create/', { course_id: courseId });
+  createPayment: async (claseId) => {
+    const response = await api.post('/payments/create/', { clase_id: claseId });
     return response.data;
   },
 
@@ -22,8 +22,8 @@ export const paymentsAPI = {
     return response.data;
   },
 
-  getMyCourses: async () => {
-    const response = await api.get('/payments/my-courses/');
+  getMyClases: async () => {
+    const response = await api.get('/payments/my-clases/');
     return response.data;
   }
 };

@@ -9,19 +9,19 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return obj == request.user
 
 
-class IsCourseOwner(permissions.BasePermission):
-    """Permiso para verificar si el usuario tiene acceso al curso"""
+class IsClaseOwner(permissions.BasePermission):
+    """Permiso para verificar si el usuario tiene acceso al clase"""
     
     def has_object_permission(self, request, view, obj):
-        from apps.payments.models import CourseAccess
+        from apps.payments.models import ClaseAccess
         
         # Permitir si es admin
         if request.user.is_staff:
             return True
         
-        # Verificar si tiene acceso al curso
-        return CourseAccess.objects.filter(
+        # Verificar si tiene acceso al clase
+        return ClaseAccess.objects.filter(
             user=request.user,
-            course=obj,
+            clase=obj,
             is_active=True
         ).exists()

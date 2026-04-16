@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('courses', '0001_initial'),
+        ('clases', '0001_initial'),
     ]
 
     operations = [
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('token', models.CharField(max_length=500, verbose_name='Token')),
                 ('expires_at', models.DateTimeField(verbose_name='Expira en')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Creado en')),
-                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='video_tokens', to='courses.lesson')),
+                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='video_tokens', to='clases.lesson')),
             ],
             options={
                 'verbose_name': 'Token de video',

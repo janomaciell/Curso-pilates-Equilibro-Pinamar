@@ -1,6 +1,6 @@
 # E-Learning Frontend - React + Vite
 
-Plataforma de e-learning para cursos de Pilates online.
+Plataforma de e-learning para clases de Pilates online.
 
 ## 🚀 Instalación
 ```bash

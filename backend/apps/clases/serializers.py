@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.conf import settings
-from .models import Course, Module, Lesson, LessonProgress, LessonDocument
+from .models import Clase, Module, Lesson, LessonProgress, LessonDocument
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ class LessonDetailSerializer(serializers.ModelSerializer):
         return LessonDocumentSerializer(docs, many=True, context=self.context).data
 
 
-# ── Module / Course serializers ────────────────────────────────────────────────
+# ── Module / Clase serializers ────────────────────────────────────────────────
 
 class ModuleSerializer(serializers.ModelSerializer):
     lessons       = LessonSerializer(many=True, read_only=True)
@@ -88,13 +88,13 @@ class ModuleSerializer(serializers.ModelSerializer):
         return obj.lessons.count()
 
 
-class CourseListSerializer(serializers.ModelSerializer):
+class ClaseListSerializer(serializers.ModelSerializer):
     total_lessons  = serializers.ReadOnlyField()
     total_students = serializers.ReadOnlyField()
     cover_image    = serializers.SerializerMethodField()
 
     class Meta:
-        model  = Course
+        model  = Clase
         fields = (
             'id', 'title', 'slug', 'short_description', 'cover_image', 'price',
             'difficulty', 'duration_hours', 'total_lessons', 'total_students',
@@ -107,7 +107,7 @@ class CourseListSerializer(serializers.ModelSerializer):
         return _make_absolute_url(obj.cover_image.url, self.context.get('request'))
 
 
-class CourseDetailSerializer(serializers.ModelSerializer):
+class ClaseDetailSerializer(serializers.ModelSerializer):
     modules        = ModuleSerializer(many=True, read_only=True)
     total_lessons  = serializers.ReadOnlyField()
     total_students = serializers.ReadOnlyField()
@@ -115,7 +115,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     cover_image    = serializers.SerializerMethodField()
 
     class Meta:
-        model  = Course
+        model  = Clase
         fields = (
             'id', 'title', 'slug', 'description', 'short_description', 'cover_image',
             'price', 'difficulty', 'duration_hours', 'modules', 'total_lessons',
@@ -130,9 +130,9 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     def get_has_access(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            from apps.payments.models import CourseAccess
-            return CourseAccess.objects.filter(
-                user=request.user, course=obj, is_active=True
+            from apps.payments.models import ClaseAccess
+            return ClaseAccess.objects.filter(
+                user=request.user, clase=obj, is_active=True
             ).exists()
         return False
 

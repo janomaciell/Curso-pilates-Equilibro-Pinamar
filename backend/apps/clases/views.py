@@ -5,32 +5,32 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from .models import Course, Module, Lesson, LessonProgress, LessonDocument
+from .models import Clase, Module, Lesson, LessonProgress, LessonDocument
 from .serializers import (
-    CourseListSerializer,
-    CourseDetailSerializer,
+    ClaseListSerializer,
+    ClaseDetailSerializer,
     LessonProgressSerializer,
     ModuleSerializer,
     LessonDetailSerializer,
     LessonDocumentSerializer,
 )
-from .filters import CourseFilter
-from apps.payments.models import CourseAccess
+from .filters import ClaseFilter
+from apps.payments.models import ClaseAccess
 
 
-class CourseViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet para cursos - Lista y detalle"""
-    queryset = Course.objects.filter(is_active=True)
+class ClaseViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet para clases - Lista y detalle"""
+    queryset = Clase.objects.filter(is_active=True)
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_class = CourseFilter
+    filterset_class = ClaseFilter
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'price', 'title']
     ordering = ['-created_at']
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
-            return CourseDetailSerializer
-        return CourseListSerializer
+            return ClaseDetailSerializer
+        return ClaseListSerializer
     
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'featured']:
@@ -38,7 +38,7 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
         return [IsAuthenticated()]
     
     def get_object_by_slug(self, slug):
-        """Obtener curso por slug (para uso en retrieve por slug)."""
+        """Obtener clase por slug (para uso en retrieve por slug)."""
         return get_object_or_404(self.get_queryset(), slug=slug)
 
     def retrieve(self, request, *args, **kwargs):
@@ -53,16 +53,16 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'])
     def featured(self, request):
-        """Obtener cursos destacados"""
-        featured_courses = self.queryset.filter(is_featured=True)[:6]
-        serializer = self.get_serializer(featured_courses, many=True)
+        """Obtener clases destacadas"""
+        featured_clases = self.queryset.filter(is_featured=True)[:6]
+        serializer = self.get_serializer(featured_clases, many=True)
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def category_stats(self, request):
         """
-        Devuelve conteos reales de cursos por categoría y dificultad.
-        GET /api/courses/category-stats/
+        Devuelve conteos reales de clases por categoría y dificultad.
+        GET /api/clases/category-stats/
 
         Respuesta:
         {
@@ -73,7 +73,7 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
         """
         from django.db.models import Count, Q
 
-        # Obtener todas las categorías únicas que tienen cursos activos
+        # Obtener todas las categorías únicas que tienen clases activas
         categories = (
             self.queryset
             .values_list('category', flat=True)
@@ -97,34 +97,34 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def check_access(self, request, pk=None):
-        """Verificar si el usuario tiene acceso al curso"""
-        course = self.get_object()
-        has_access = CourseAccess.objects.filter(
+        """Verificar si el usuario tiene acceso a la clase"""
+        clase = self.get_object()
+        has_access = ClaseAccess.objects.filter(
             user=request.user,
-            course=course,
+            clase=clase,
             is_active=True
         ).exists()
         return Response({'has_access': has_access})
     
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def modules(self, request, pk=None):
-        """Obtener módulos de un curso con acceso"""
-        course = self.get_object()
+        """Obtener módulos de una clase con acceso"""
+        clase = self.get_object()
         
         # Verificar acceso
-        has_access = CourseAccess.objects.filter(
+        has_access = ClaseAccess.objects.filter(
             user=request.user,
-            course=course,
+            clase=clase,
             is_active=True
         ).exists()
         
         if not has_access:
             return Response(
-                {'error': 'No tienes acceso a este curso'},
+                {'error': 'No tienes acceso a esta clase'},
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        modules = course.modules.all()
+        modules = clase.modules.all()
         serializer = ModuleSerializer(modules, many=True)
         return Response(serializer.data)
 
@@ -141,16 +141,16 @@ class LessonProgressViewSet(viewsets.ModelViewSet):
         lesson_id = request.data.get('lesson')
         lesson = get_object_or_404(Lesson, id=lesson_id)
         
-        # Verificar acceso al curso
-        has_access = CourseAccess.objects.filter(
+        # Verificar acceso a la clase
+        has_access = ClaseAccess.objects.filter(
             user=request.user,
-            course=lesson.module.course,
+            clase=lesson.module.clase,
             is_active=True
         ).exists()
         
         if not has_access:
             return Response(
-                {'error': 'No tienes acceso a este curso'},
+                {'error': 'No tienes acceso a esta clase'},
                 status=status.HTTP_403_FORBIDDEN
             )
         
@@ -168,17 +168,17 @@ class LessonProgressViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
     
     @action(detail=False, methods=['get'])
-    def by_course(self, request):
-        """Obtener progreso de un curso específico"""
-        course_id = request.query_params.get('course_id')
-        if not course_id:
+    def by_clase(self, request):
+        """Obtener progreso de una clase específica"""
+        clase_id = request.query_params.get('clase_id')
+        if not clase_id:
             return Response(
-                {'error': 'course_id es requerido'},
+                {'error': 'clase_id es requerido'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         progress = self.get_queryset().filter(
-            lesson__module__course_id=course_id
+            lesson__module__clase_id=clase_id
         )
         serializer = self.get_serializer(progress, many=True)
         return Response(serializer.data)
@@ -193,11 +193,11 @@ class LessonDetailView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         lesson = self.get_object()
         
-        # Verificar acceso al curso
+        # Verificar acceso a la clase
         if not lesson.is_preview:
-            has_access = CourseAccess.objects.filter(
+            has_access = ClaseAccess.objects.filter(
                 user=request.user,
-                course=lesson.module.course,
+                clase=lesson.module.clase,
                 is_active=True
             ).exists()
             
@@ -214,10 +214,10 @@ class LessonDetailView(generics.RetrieveAPIView):
 class LessonDocumentViewSet(viewsets.ModelViewSet):
     """ViewSet para documentos adjuntos a lecciones.
     
-    GET  /courses/lessons/<lesson_pk>/documents/         → lista (requiere acceso al curso)
-    POST /courses/lessons/<lesson_pk>/documents/         → subir archivo (admin)
-    GET  /courses/documents/<pk>/                        → detalle
-    DELETE /courses/documents/<pk>/                      → borrar (admin)
+    GET  /clases/lessons/<lesson_pk>/documents/         → lista (requiere acceso a la clase)
+    POST /clases/lessons/<lesson_pk>/documents/         → subir archivo (admin)
+    GET  /clases/documents/<pk>/                        → detalle
+    DELETE /clases/documents/<pk>/                      → borrar (admin)
     """
     serializer_class = LessonDocumentSerializer
     parser_classes = [MultiPartParser, FormParser]
@@ -234,12 +234,12 @@ class LessonDocumentViewSet(viewsets.ModelViewSet):
         return [IsAdminUser()]
 
     def _check_lesson_access(self, request, lesson):
-        """Verifica que el usuario tenga acceso al curso de la lección."""
+        """Verifica que el usuario tenga acceso a la clase de la lección."""
         if lesson.is_preview:
             return True
-        return CourseAccess.objects.filter(
+        return ClaseAccess.objects.filter(
             user=request.user,
-            course=lesson.module.course,
+            clase=lesson.module.clase,
             is_active=True
         ).exists()
 

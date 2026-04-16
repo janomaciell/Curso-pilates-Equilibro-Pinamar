@@ -9,12 +9,12 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('courses', '0001_initial'),
+        ('clases', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CourseAccess',
+            name='ClaseAccess',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('is_active', models.BooleanField(default=True, verbose_name='Activo')),
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Acceso a curso',
                 'verbose_name_plural': 'Accesos a cursos',
-                'db_table': 'course_accesses',
+                'db_table': 'clase_accesses',
                 'ordering': ['-purchased_at'],
             },
         ),
@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Última actualización')),
                 ('approved_at', models.DateTimeField(blank=True, null=True, verbose_name='Fecha de aprobación')),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to='courses.course')),
+                ('clase', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to='clases.clase')),
             ],
             options={
                 'verbose_name': 'Transacción',

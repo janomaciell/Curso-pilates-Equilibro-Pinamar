@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('courses', '0001_initial'),
+        ('clases', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -23,21 +23,21 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='lessondocument',
             name='lesson',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to='courses.lesson'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to='clases.lesson'),
         ),
         migrations.AddField(
             model_name='lesson',
             name='module',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lessons', to='courses.module'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lessons', to='clases.module'),
         ),
         migrations.AddField(
-            model_name='course',
+            model_name='clase',
             name='created_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='courses_created', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='clases_created', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AlterUniqueTogether(
             name='module',
-            unique_together={('course', 'order')},
+            unique_together={('clase', 'order')},
         ),
         migrations.AlterUniqueTogether(
             name='lessonprogress',

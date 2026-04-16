@@ -10,7 +10,7 @@ urlpatterns = [
     
     # API endpoints
     path('api/auth/', include('apps.users.urls')),
-    path('api/courses/', include('apps.courses.urls')),
+    path('api/clases/', include('apps.clases.urls')),
     path('api/payments/', include('apps.payments.urls')),
     path('api/videos/', include('apps.videos.urls')),
     

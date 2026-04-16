@@ -14,14 +14,14 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Course',
+            name='Clase',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=200, verbose_name='Título')),
                 ('slug', models.SlugField(max_length=200, unique=True, verbose_name='Slug')),
                 ('description', models.TextField(verbose_name='Descripción')),
                 ('short_description', models.CharField(max_length=300, verbose_name='Descripción corta')),
-                ('cover_image', models.ImageField(upload_to='courses/covers/', verbose_name='Imagen de portada')),
+                ('cover_image', models.ImageField(upload_to='clases/covers/', verbose_name='Imagen de portada')),
                 ('price', models.DecimalField(decimal_places=2, max_digits=10, validators=[django.core.validators.MinValueValidator(0)], verbose_name='Precio')),
                 ('difficulty', models.CharField(choices=[('beginner', 'Principiante'), ('intermediate', 'Intermedio'), ('advanced', 'Avanzado')], default='beginner', max_length=20, verbose_name='Dificultad')),
                 ('duration_hours', models.PositiveIntegerField(default=0, verbose_name='Duración (horas)')),
@@ -31,9 +31,9 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Última actualización')),
             ],
             options={
-                'verbose_name': 'Curso',
-                'verbose_name_plural': 'Cursos',
-                'db_table': 'courses',
+                'verbose_name': 'Clase',
+                'verbose_name_plural': 'Clases',
+                'db_table': 'clases',
                 'ordering': ['-created_at'],
             },
         ),
@@ -80,13 +80,13 @@ class Migration(migrations.Migration):
                 ('description', models.TextField(blank=True, verbose_name='Descripción')),
                 ('order', models.PositiveIntegerField(default=0, verbose_name='Orden')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='modules', to='courses.course')),
+                ('clase', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='modules', to='clases.clase')),
             ],
             options={
                 'verbose_name': 'Módulo',
                 'verbose_name_plural': 'Módulos',
                 'db_table': 'modules',
-                'ordering': ['course', 'order'],
+                'ordering': ['clase', 'order'],
             },
         ),
         migrations.CreateModel(
@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
                 ('progress_percentage', models.PositiveIntegerField(default=0, verbose_name='Porcentaje de progreso')),
                 ('last_watched_at', models.DateTimeField(auto_now=True, verbose_name='Última visualización')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Fecha de inicio')),
-                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_progress', to='courses.lesson')),
+                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_progress', to='clases.lesson')),
             ],
             options={
                 'verbose_name': 'Progreso de lección',

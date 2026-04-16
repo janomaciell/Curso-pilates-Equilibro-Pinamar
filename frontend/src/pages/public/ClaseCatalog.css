@@ -1,5 +1,5 @@
 /* ================================================================
-   CourseCatalog.css — Equilibrio Pinamar
+   ClaseCatalog.css — Equilibrio Pinamar
    Estética: misma paleta y tipografía que Home
    ================================================================ */
 
@@ -51,13 +51,16 @@
   display: inline-block;
   overflow: hidden;
   vertical-align: bottom;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
 }
 .cc-word {
   display: inline-block;
   will-change: transform, opacity;
 }
 .cc-word--accent {
-  font-style: italic;
+  padding: 0.1em;
+  margin-bottom: -0.1em;
   color: var(--sage-dark);
 }
 
@@ -123,7 +126,7 @@
   font-family: var(--font-display);
   font-size: clamp(3rem, 7vw, 6.5rem);
   font-weight: 400;
-  line-height: 1.02;
+  line-height: 1.1;
   letter-spacing: -.02em;
   color: var(--ink);
   margin-bottom: 1.2rem;
@@ -722,7 +725,7 @@
 }
 .cc-cat-search__clear:hover { background: var(--sage); color: var(--white); }
 
-/* Contador de cursos */
+/* Contador de clases */
 .cc-count {
   font-size: .8rem;
   color: var(--ink-soft);
@@ -732,12 +735,12 @@
 .cc-count strong { color: var(--sage-dark); font-weight: 600; }
 
 /* ── CURSOS GRID ─────────────────────────────────────────────────── */
-.cc-courses-wrap {
+.cc-clases-wrap {
   min-height: 300px;
 }
 
-/* Aplica al .courses-grid que genera CourseList */
-.courses-grid {
+/* Aplica al .clases-grid que genera ClaseList */
+.clases-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
@@ -876,7 +879,7 @@
   .cc-detail-header__title {
     font-size: 3.2rem;
   }
-  .courses-grid { grid-template-columns: 1fr; }
+  .clases-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

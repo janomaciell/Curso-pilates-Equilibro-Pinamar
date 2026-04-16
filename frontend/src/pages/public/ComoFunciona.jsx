@@ -40,7 +40,7 @@ const ComoFunciona = () => {
 
   const benefits = [
     { icon: <FiVideo />, title: 'Videos HD de calidad', desc: 'Clases grabadas con total nitidez para que veas cada detalle de cada movimiento.' },
-    { icon: <FiClock />, title: 'Acceso de por vida', desc: 'Aprendé a tu ritmo, sin presiones ni vencimientos. Tu curso para siempre.' },
+    { icon: <FiClock />, title: 'Acceso de por vida', desc: 'Aprendé a tu ritmo, sin presiones ni vencimientos. Tu clase para siempre.' },
     { icon: <FiDownload />, title: 'Material descargable', desc: 'PDFs con secuencias y guías de ejercicios listas para imprimir.' },
     { icon: <FiMessageCircle />, title: 'Soporte directo', desc: 'Respondo todas tus dudas personalmente vía WhatsApp para que nunca te trabes en tu práctica.' },
     { icon: <FiUsers />, title: 'Comunidad activa', desc: 'Conectá con otras alumnas de Pilates, compartí tus logros y unite a nuestro grupo.' },
@@ -50,14 +50,14 @@ const ComoFunciona = () => {
   const faqs = [
     {
       q: '¿Necesito experiencia previa para empezar?',
-      a: 'No, para nada. Los cursos están diseñados desde cero, pensados para personas que nunca practicaron Pilates. Andrea te guía paso a paso desde los movimientos más básicos.',
+      a: 'No, para nada. Las clases están diseñadas desde cero, pensadas para personas que nunca practicaron Pilates. Andrea te guía paso a paso desde los movimientos más básicos.',
     },
     {
       q: '¿Cómo accedo al contenido una vez que compro?',
-      a: 'Una vez confirmado el pago, el curso aparece de inmediato en tu sección "Mis cursos". Podés empezar a ver las clases en el momento que quieras, desde cualquier dispositivo.',
+      a: 'Una vez confirmado el pago, la clase aparece de inmediato en tu sección "Mis clases". Podés empezar a ver las clases en el momento que quieras, desde cualquier dispositivo.',
     },
     {
-      q: '¿Por cuánto tiempo tengo acceso al curso?',
+      q: '¿Por cuánto tiempo tengo acceso a la clase?',
       a: 'Para siempre. El acceso es de por vida: podés ver las clases cuantas veces quieras, a tu ritmo, sin ningún vencimiento.',
     },
     {
@@ -66,11 +66,11 @@ const ComoFunciona = () => {
     },
     {
       q: '¿Necesito muchos elementos para practicar?',
-      a: 'No. En cada curso se indica exactamente qué elementos necesitás (colchoneta, bandas, aro, etc.) y siempre se ofrecen alternativas para que puedas practicar con lo que tengas en casa.',
+      a: 'No. En cada clase se indica exactamente qué elementos necesitás (colchoneta, bandas, aro, etc.) y siempre se ofrecen alternativas para que puedas practicar con lo que tengas en casa.',
     },
     {
-      q: '¿Los cursos incluyen material en PDF?',
-      a: 'Sí. Cada curso incluye guías y secuencias en PDF descargables para que puedas imprimirlas o tenerlas a mano mientras practicás.',
+      q: '¿Las clases incluyen material en PDF?',
+      a: 'Sí. Cada clase incluye guías y secuencias en PDF descargables para que puedas imprimirlas o tenerlas a mano mientras practicás.',
     },
   ];
 
@@ -177,14 +177,14 @@ const ComoFunciona = () => {
       <section className="cf2-hero-section">
         <div className="cf2-hero-content">
           <p className="cf2-hero-eyebrow">Equilibrio Pinamar</p>
-          <h1 className="cf2-hero-title">¿Cómo funcionan<br />nuestros cursos de Pilates?</h1>
+          <h1 className="cf2-hero-title">¿Cómo funcionan<br />nuestras clases de Pilates?</h1>
           <p className="cf2-hero-desc">
             Todo lo que necesitás saber para empezar a practicar Pilates hoy. Sin complicaciones, sin experiencia previa, a tu ritmo.
           </p>
           <div className="cf2-hero-buttons">
-            <Link to="/cursos">
+            <Link to="/clases">
               <Button size="large" className="btn-primary">
-                Ver Cursos
+                Ver Clases
                 <FiArrowRight />
               </Button>
             </Link>
@@ -239,7 +239,7 @@ const ComoFunciona = () => {
       {/* Qué incluye / Beneficios */}
       <section className="cf2-benefits-section">
         <div className="cf2-section-container">
-          <h2 className="cf2-section-title">¿Qué incluye cada curso?</h2>
+          <h2 className="cf2-section-title">¿Qué incluye cada clase?</h2>
           <p className="cf2-section-subtitle">Todo lo que necesitás para aprender está incluido</p>
           <div className="cf2-benefits-grid">
             {benefits.map((b, i) => (
@@ -263,10 +263,10 @@ const ComoFunciona = () => {
               Tengo 54 años y practico movimiento consciente desde que era chica. Pilates siempre fue parte de mi vida: primero como un descubrimiento personal, luego como una pasión, y hoy como una forma de compartir, conectar y acompañar a otras personas.
             </p>
             <p className="cf2-andrea-text">
-              Estoy creando cursos simples, claros y accesibles para todos. Creo profundamente que cualquiera puede empezar a moverse mejor, sin importar la edad o la experiencia previa.
+              Estoy creando clases simples, claras y accesibles para todos. Creo profundamente que cualquiera puede empezar a moverse mejor, sin importar la edad o la experiencia previa.
             </p>
             <p className="cf2-andrea-text">
-              Para mí, Pilates es un momento de calma y presencia, una pausa en el día. Mi deseo es que, a través de estos cursos, puedas cuidar tu cuerpo, tu mente y regalarte ese momento tan especial para vos.
+              Para mí, Pilates es un momento de calma y presencia, una pausa en el día. Mi deseo es que, a través de estas clases, puedas cuidar tu cuerpo, tu mente y regalarte ese momento tan especial para vos.
             </p>
             <div className="cf2-andrea-values">
               <span className="cf2-value-tag">Pasión</span>
@@ -297,7 +297,7 @@ const ComoFunciona = () => {
             <div className="cf2-trust-card">
               <div className="cf2-trust-card-icon"><FiCheckCircle /></div>
               <h4>Acceso inmediato</h4>
-              <p>Una vez confirmado el pago, el curso queda disponible en tu cuenta al instante. Empezá hoy.</p>
+              <p>Una vez confirmado el pago, la clase queda disponible en tu cuenta al instante. Empezá hoy.</p>
             </div>
             <div className="cf2-trust-card">
               <div className="cf2-trust-card-icon"><FiMessageCircle /></div>
@@ -307,7 +307,7 @@ const ComoFunciona = () => {
             <div className="cf2-trust-card">
               <div className="cf2-trust-card-icon"><FiStar /></div>
               <h4>Calidad garantizada</h4>
-              <p>Cada curso está pensado, grabado y editado con cuidado para que el aprendizaje sea claro y efectivo.</p>
+              <p>Cada clase está pensado, grabado y editado con cuidado para que el aprendizaje sea claro y efectivo.</p>
             </div>
           </div>
         </div>
@@ -346,7 +346,7 @@ const ComoFunciona = () => {
             Únete a nuestra comunidad de alumnas de Pilates y descubrí el placer de habitar tu cuerpo con conciencia.<br />
             <strong>Inscribite hoy y accedé de inmediato a todo el contenido.</strong>
           </p>
-          <Link to="/cursos">
+          <Link to="/clases">
             <Button size="large" className="btn-cta-final">
               Comenzar Ahora
               <FiArrowRight />

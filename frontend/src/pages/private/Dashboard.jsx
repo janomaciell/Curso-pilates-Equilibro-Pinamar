@@ -20,7 +20,7 @@ import './Dashboard.css';
 const Dashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
-  const [recentCourses, setRecentCourses] = useState([]);
+  const [recentClases, setRecentClases] = useState([]);
   const [loading, setLoading] = useState(true);
   const statsRef = useRef([]);
 
@@ -42,12 +42,12 @@ const Dashboard = () => {
         { opacity: 1, scale: 1, y: 0, stagger: 0.1, duration: 0.5, ease: 'back.out(1.2)' },
         '-=0.3'
       )
-      .fromTo('.recent-courses-section',
+      .fromTo('.recent-clases-section',
         { opacity: 0, y: 30 },
         { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' },
         '-=0.3'
       )
-      .fromTo('.course-item',
+      .fromTo('.clase-item',
         { opacity: 0, y: 20 },
         { opacity: 1, y: 0, stagger: 0.1, duration: 0.5, ease: 'power2.out' },
         '-=0.3'
@@ -57,14 +57,14 @@ const Dashboard = () => {
 
   const loadDashboardData = async () => {
     try {
-      const [statsData, coursesData] = await Promise.all([
+      const [statsData, clasesData] = await Promise.all([
         authAPI.getUserStats(),
-        paymentsAPI.getMyCourses()
+        paymentsAPI.getMyClases()
       ]);
 
       setStats(statsData);
-      const courses = coursesData.results?.slice(0, 3) || coursesData.slice(0, 3);
-      setRecentCourses(courses);
+      const clases = clasesData.results?.slice(0, 3) || clasesData.slice(0, 3);
+      setRecentClases(clases);
     } catch (error) {
       console.error('Error al cargar datos:', error);
     } finally {
@@ -85,9 +85,9 @@ const Dashboard = () => {
             <h1>¡Hola, {user?.first_name}! 👋</h1>
             <p>Aquí está tu resumen de aprendizaje</p>
           </div>
-          <Link to="/cursos" className="explore-btn">
+          <Link to="/clases" className="explore-btn">
             <FiTarget />
-            Explorar Cursos
+            Explorar Clases
           </Link>
         </div>
       </div>
@@ -95,12 +95,12 @@ const Dashboard = () => {
       {/* Stats Grid */}
       <div className="stats-grid">
         <div className="stat-card" ref={el => statsRef.current[0] = el}>
-          <div className="stat-icon courses">
+          <div className="stat-icon clases">
             <FiBook />
           </div>
           <div className="stat-info">
-            <h3>{stats?.courses_purchased || 0}</h3>
-            <p>Cursos Activos</p>
+            <h3>{stats?.clases_purchased || 0}</h3>
+            <p>Clases Activos</p>
             <div className="stat-trend">
               <FiTrendingUp />
               <span>En progreso</span>
@@ -137,14 +137,14 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent Courses */}
-      <div className="recent-courses-section">
+      {/* Recent Clases */}
+      <div className="recent-clases-section">
         <div className="section-header">
           <div className="section-title">
             <FiClock />
             <h2>Continúa Aprendiendo</h2>
           </div>
-          <Link to="/mis-cursos" className="view-all-link">
+          <Link to="/mis-clases" className="view-all-link">
             Ver Todos
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -152,16 +152,16 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {recentCourses.length > 0 ? (
-          <div className="courses-grid">
-            {recentCourses.map((access) => (
-              <div key={access.id} className="course-item">
-                <Link to={`/curso/${access.course.id}/player`} className="course-image-link">
+        {recentClases.length > 0 ? (
+          <div className="clases-grid">
+            {recentClases.map((access) => (
+              <div key={access.id} className="clase-item">
+                <Link to={`/clase/${access.clase.id}/player`} className="clase-image-link">
                   <NgrokImage 
-                    src={access.course.cover_image}
-                    alt={access.course.title}
+                    src={access.clase.cover_image}
+                    alt={access.clase.title}
                   />
-                  <div className="course-overlay">
+                  <div className="clase-overlay">
                     <div className="play-icon">
                       <FiPlay />
                     </div>
@@ -174,9 +174,9 @@ const Dashboard = () => {
                   )}
                 </Link>
                 
-                <div className="course-item-content">
-                  <Link to={`/curso/${access.course.id}/player`}>
-                    <h3>{access.course.title}</h3>
+                <div className="clase-item-content">
+                  <Link to={`/clase/${access.clase.id}/player`}>
+                    <h3>{access.clase.title}</h3>
                   </Link>
                   
                   <div className="progress-section">
@@ -192,7 +192,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   
-                  <Link to={`/curso/${access.course.id}/player`} className="continue-btn">
+                  <Link to={`/clase/${access.clase.id}/player`} className="continue-btn">
                     <FiPlay />
                     {access.progress === 0 ? 'Comenzar' : 'Continuar'}
                   </Link>
@@ -205,11 +205,11 @@ const Dashboard = () => {
             <div className="empty-icon">
               <FiBook />
             </div>
-            <h3>Aún no tienes cursos</h3>
+            <h3>Aún no tienes clases</h3>
             <p>Explora nuestro catálogo y comienza tu viaje de aprendizaje hoy</p>
-            <Link to="/cursos" className="browse-btn">
+            <Link to="/clases" className="browse-btn">
               <FiTarget />
-              Explorar Cursos
+              Explorar Clases
             </Link>
           </div>
         )}

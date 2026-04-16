@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Course, Module, Lesson, LessonProgress, LessonDocument
+from .models import Clase, Module, Lesson, LessonProgress, LessonDocument
 
 
 # ── Inlines ────────────────────────────────────────────────────────────────────
@@ -24,10 +24,10 @@ class LessonDocumentInline(admin.TabularInline):
     verbose_name_plural = 'Documentos adjuntos'
 
 
-# ── Course ─────────────────────────────────────────────────────────────────────
+# ── Clase ─────────────────────────────────────────────────────────────────────
 
-@admin.register(Course)
-class CourseAdmin(admin.ModelAdmin):
+@admin.register(Clase)
+class ClaseAdmin(admin.ModelAdmin):
     list_display   = ('title', 'price', 'difficulty', 'is_active', 'is_featured', 'total_students', 'created_at')
     list_filter    = ('difficulty', 'is_active', 'is_featured', 'created_at')
     search_fields  = ('title', 'description')
@@ -51,9 +51,9 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Module)
 class ModuleAdmin(admin.ModelAdmin):
-    list_display  = ('title', 'course', 'order', 'created_at')
-    list_filter   = ('course', 'created_at')
-    search_fields = ('title', 'course__title')
+    list_display  = ('title', 'clase', 'order', 'created_at')
+    list_filter   = ('clase', 'created_at')
+    search_fields = ('title', 'clase__title')
     inlines       = [LessonInline]
 
 
@@ -62,7 +62,7 @@ class ModuleAdmin(admin.ModelAdmin):
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
     list_display  = ('title', 'module', 'lesson_type', 'video_id', 'duration_minutes', 'order', 'is_preview')
-    list_filter   = ('lesson_type', 'module__course', 'is_preview', 'created_at')
+    list_filter   = ('lesson_type', 'module__clase', 'is_preview', 'created_at')
     search_fields = ('title', 'module__title')
     inlines       = [LessonDocumentInline]
 
@@ -82,7 +82,7 @@ class LessonAdmin(admin.ModelAdmin):
 @admin.register(LessonDocument)
 class LessonDocumentAdmin(admin.ModelAdmin):
     list_display  = ('__str__', 'lesson', 'file_type', 'created_at')
-    list_filter   = ('lesson__module__course', 'created_at')
+    list_filter   = ('lesson__module__clase', 'created_at')
     search_fields = ('title', 'lesson__title')
     readonly_fields = ('file_type', 'name', 'created_at')
 

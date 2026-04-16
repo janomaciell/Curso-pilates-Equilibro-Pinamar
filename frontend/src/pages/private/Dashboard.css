@@ -135,7 +135,7 @@
   color: var(--white);
 }
 
-.stat-icon.courses {
+.stat-icon.clases {
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
 }
 
@@ -181,8 +181,8 @@
   height: 16px;
 }
 
-/* Recent Courses Section */
-.recent-courses-section {
+/* Recent Clases Section */
+.recent-clases-section {
   max-width: 1400px;
   margin: 0 auto;
   background: var(--white);
@@ -237,7 +237,7 @@
 }
 
 
-.course-item {
+.clase-item {
   border-radius: 20px;
   overflow: hidden;
   border: 2px solid var(--gray-100);
@@ -245,13 +245,13 @@
   background: var(--white);
 }
 
-.course-item:hover {
+.clase-item:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
   border-color: var(--primary-color);
 }
 
-.course-image-link {
+.clase-image-link {
   position: relative;
   display: block;
   width: 100%;
@@ -259,18 +259,18 @@
   overflow: hidden;
 }
 
-.course-image-link img {
+.clase-image-link img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
 }
 
-.course-item:hover .course-image-link img {
+.clase-item:hover .clase-image-link img {
   transform: scale(1.1);
 }
 
-.course-overlay {
+.clase-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(185, 137, 103, 0.9), rgba(153, 108, 78, 0.9));
@@ -281,7 +281,7 @@
   transition: opacity 0.4s ease;
 }
 
-.course-item:hover .course-overlay {
+.clase-item:hover .clase-overlay {
   opacity: 1;
 }
 
@@ -328,11 +328,11 @@
   height: 16px;
 }
 
-.course-item-content {
+.clase-item-content {
   padding: 2rem;
 }
 
-.course-item-content h3 {
+.clase-item-content h3 {
   font-family: var(--font-display);
   font-size: 1.35rem;
   font-weight: 700;
@@ -346,7 +346,7 @@
   overflow: hidden;
 }
 
-.course-item-content a:hover h3 {
+.clase-item-content a:hover h3 {
   color: var(--primary-color);
 }
 
@@ -491,7 +491,7 @@
     grid-template-columns: 1fr;
   }
 
-  .courses-grid {
+  .clases-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -511,7 +511,7 @@
     font-size: 2rem;
   }
 
-  .recent-courses-section {
+  .recent-clases-section {
     padding: 2rem 1.5rem;
   }
 
@@ -519,7 +519,7 @@
     font-size: 1.5rem;
   }
 
-  .courses-grid {
+  .clases-grid {
     grid-template-columns: 1fr;
   }
 

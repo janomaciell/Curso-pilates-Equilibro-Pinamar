@@ -4,14 +4,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.conf import settings
-from .models import Transaction, CourseAccess
+from .models import Transaction, ClaseAccess
 from .serializers import (
     TransactionSerializer,
-    CourseAccessSerializer,
+    ClaseAccessSerializer,
     CreatePaymentSerializer
 )
 from .mercadopago import MercadoPagoService
-from apps.courses.models import Course
+from apps.clases.models import Clase
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,28 +26,28 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
         return Transaction.objects.filter(user=self.request.user).order_by('-created_at')
 
 
-class CourseAccessViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet para accesos a cursos (Mis Cursos)"""
-    serializer_class = CourseAccessSerializer
+class ClaseAccessViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet para accesos a clases (Mis Clases)"""
+    serializer_class = ClaseAccessSerializer
     permission_classes = [IsAuthenticated]
     
     
     def get_queryset(self):
-        return CourseAccess.objects.filter(
+        return ClaseAccess.objects.filter(
             user=self.request.user,
             is_active=True
-        ).select_related('course').order_by('-purchased_at')
+        ).select_related('clase').order_by('-purchased_at')
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def my_courses(request):
-    """Lista de cursos comprados por el usuario (Mis Cursos)."""
-    accesses = CourseAccess.objects.filter(
+def my_clases(request):
+    """Lista de clases compradas por el usuario (Mis Clases)."""
+    accesses = ClaseAccess.objects.filter(
         user=request.user,
         is_active=True
-    ).select_related('course').order_by('-purchased_at')
-    serializer = CourseAccessSerializer(accesses, many=True)
+    ).select_related('clase').order_by('-purchased_at')
+    serializer = ClaseAccessSerializer(accesses, many=True)
     return Response(serializer.data)
 
 
@@ -74,14 +74,14 @@ def create_payment(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    course_id = serializer.validated_data['course_id']
-    course = get_object_or_404(Course, id=course_id, is_active=True)
+    clase_id = serializer.validated_data['clase_id']
+    clase = get_object_or_404(Clase, id=clase_id, is_active=True)
     user = request.user
     
     # Verificar si ya tiene acceso
-    if CourseAccess.objects.filter(user=user, course=course, is_active=True).exists():
+    if ClaseAccess.objects.filter(user=user, clase=clase, is_active=True).exists():
         return Response(
-            {'error': 'Ya tienes acceso a este curso'},
+            {'error': 'Ya tienes acceso a esta clase'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
@@ -90,7 +90,7 @@ def create_payment(request):
         
         # URL del frontend donde redirigir después del pago
         frontend_url = get_frontend_url()
-        return_url = f"{frontend_url}/cursos/{course.slug}"
+        return_url = f"{frontend_url}/clases/{clase.slug}"
 
         # URL del webhook: tiene que ser pública (ngrok/dominio). MP no puede llamar a localhost.
         backend_url = (getattr(settings, 'BACKEND_URL', None) or '').strip()
@@ -100,13 +100,13 @@ def create_payment(request):
             notification_url = request.build_absolute_uri('/api/payments/webhook/')
 
         # Debug: mostrar exactamente qué URLs se envían a MP
-        logger.info(f"[MP] Creating payment for course: {course.title}")
+        logger.info(f"[MP] Creating payment for clase: {clase.title}")
         logger.info(f"[MP] frontend_url: {frontend_url}")
         logger.info(f"[MP] return_url: {return_url}")
         logger.info(f"[MP] notification_url: {notification_url}")
         
         preference = mp_service.create_preference(
-            course=course,
+            clase=clase,
             user=user,
             return_url=return_url,
             notification_url=notification_url
@@ -115,9 +115,9 @@ def create_payment(request):
         # Crear transacción pendiente
         transaction = Transaction.objects.create(
             user=user,
-            course=course,
+            clase=clase,
             mp_preference_id=preference['preference_id'],
-            amount=course.price,
+            amount=clase.price,
             status='pending',
             ip_address=get_client_ip(request)
         )
@@ -209,7 +209,7 @@ def check_preference_status(request, preference_id):
             else:
                 # No tenemos payment_id: buscar por external_reference.
                 # La API de MP no admite búsqueda por preference_id (devuelve 400).
-                external_reference = f"user_{transaction.user.id}_course_{transaction.course.id}"
+                external_reference = f"user_{transaction.user.id}_clase_{transaction.clase.id}"
                 logger.info(f"[Polling] Searching for payment: external_reference={external_reference}")
                 
                 payment_data = mp_service.search_payments_by_external_reference(external_reference)
@@ -229,7 +229,7 @@ def check_preference_status(request, preference_id):
                     
                     logger.info(f"[Polling] ✓ Payment FOUND: {payment_id}, status: {mp_status}")
                     
-                    # Evitar UNIQUE: si otro intento (misma preferencia/user/course) ya tiene este payment_id,
+                    # Evitar UNIQUE: si otro intento (misma preferencia/user/clase) ya tiene este payment_id,
                     # no asignarlo aquí; usar la transacción que ya lo tiene para responder.
                     other = Transaction.objects.filter(mp_payment_id=payment_id).exclude(pk=transaction.pk).first()
                     if other:

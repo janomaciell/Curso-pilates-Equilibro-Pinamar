@@ -5,10 +5,10 @@ from django.utils import timezone
 import json
 import logging
 import re
-from .models import Transaction, CourseAccess
+from .models import Transaction, ClaseAccess
 from .mercadopago import MercadoPagoService
 from apps.users.models import User
-from apps.courses.models import Course
+from apps.clases.models import Clase
 
 logger = logging.getLogger(__name__)
 
@@ -39,28 +39,28 @@ def mercadopago_webhook(request):
         payment_info = mp_service.get_payment_info(payment_id)
 
         # ------------------------------------------------------------------
-        # Resolver user / course a partir de metadata y external_reference
+        # Resolver user / clase a partir de metadata y external_reference
         # ------------------------------------------------------------------
         external_reference = payment_info.get("external_reference", "") or ""
         metadata = payment_info.get("metadata", {}) or {}
 
         meta_user_id = metadata.get("user_id")
-        meta_course_id = metadata.get("course_id")
+        meta_clase_id = metadata.get("clase_id")
 
         ref_user_id = None
-        ref_course_id = None
+        ref_clase_id = None
         if external_reference:
-            # external_reference esperado: "user_{user_id}_course_{course_id}"
-            match = re.match(r"user_(\d+)_course_(\d+)", str(external_reference).strip())
+            # external_reference esperado: "user_{user_id}_clase_{clase_id}"
+            match = re.match(r"user_(\d+)_clase_(\d+)", str(external_reference).strip())
             if match:
-                ref_user_id, ref_course_id = int(match.group(1)), int(match.group(2))
+                ref_user_id, ref_clase_id = int(match.group(1)), int(match.group(2))
 
         user_id = meta_user_id or ref_user_id
-        course_id = meta_course_id or ref_course_id
+        clase_id = meta_clase_id or ref_clase_id
 
-        if not user_id or not course_id:
+        if not user_id or not clase_id:
             logger.error(
-                f"Webhook pago {payment_id}: no se pudo resolver user_id/course_id "
+                f"Webhook pago {payment_id}: no se pudo resolver user_id/clase_id "
                 f"(metadata={metadata}, external_reference={external_reference})"
             )
             return JsonResponse(
@@ -70,11 +70,11 @@ def mercadopago_webhook(request):
 
         try:
             user = User.objects.get(id=user_id)
-            course = Course.objects.get(id=course_id)
-        except (User.DoesNotExist, Course.DoesNotExist) as e:
-            logger.error(f"Webhook pago {payment_id}: usuario o curso no encontrado - {e}")
+            clase = Clase.objects.get(id=clase_id)
+        except (User.DoesNotExist, Clase.DoesNotExist) as e:
+            logger.error(f"Webhook pago {payment_id}: usuario o clase no encontrado - {e}")
             return JsonResponse(
-                {"status": "error", "message": "Usuario o curso no encontrado"},
+                {"status": "error", "message": "Usuario o clase no encontrado"},
                 status=400,
             )
 
@@ -87,24 +87,24 @@ def mercadopago_webhook(request):
         # 0) Si ya existe una transacción con este payment_id, usarla (evita UNIQUE constraint)
         transaction = Transaction.objects.filter(mp_payment_id=str(payment_id)).first()
 
-        # 1) Si no, intentar por preference_id + usuario + curso (flujo normal)
+        # 1) Si no, intentar por preference_id + usuario + clase (flujo normal)
         if not transaction and pref_id:
             transaction = (
                 Transaction.objects.filter(
                     mp_preference_id=pref_id,
                     user=user,
-                    course=course,
+                    clase=clase,
                 )
                 .order_by("-created_at")
                 .first()
             )
 
-        # 2) Si no está, tomar la última transacción pendiente de ese user/curso
+        # 2) Si no está, tomar la última transacción pendiente de ese user/clase
         if not transaction:
             transaction = (
                 Transaction.objects.filter(
                     user=user,
-                    course=course,
+                    clase=clase,
                     status="pending",
                 )
                 .order_by("-created_at")
@@ -115,7 +115,7 @@ def mercadopago_webhook(request):
         if not transaction:
             transaction = Transaction(
                 user=user,
-                course=course,
+                clase=clase,
                 mp_preference_id=pref_id,
                 amount=payment_info.get("transaction_amount", 0),
                 status="pending",
@@ -132,7 +132,7 @@ def mercadopago_webhook(request):
         transaction.mp_merchant_order_id = str(payment_info.get("order", {}).get("id", ""))
         transaction.raw_data = payment_info
 
-        # Si está aprobado, dar acceso al curso
+        # Si está aprobado, dar acceso a la clase
         # FIX: approve() ya no hace save(), así que el único save() es este de abajo
         if transaction.status == 'approved':
             transaction.approve()

@@ -74,7 +74,7 @@ const PurchaseHistory = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(t => 
-        t.course_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.clase_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.mp_payment_id?.toString().includes(searchTerm)
       );
     }
@@ -236,7 +236,7 @@ const PurchaseHistory = () => {
               <FiSearch />
               <input
                 type="text"
-                placeholder="Buscar por curso o ID de pago..."
+                placeholder="Buscar por clase o ID de pago..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -276,8 +276,8 @@ const PurchaseHistory = () => {
             {filteredTransactions.map((transaction) => (
               <div key={transaction.id} className="transaction-card">
                 <div className="transaction-header">
-                  <div className="transaction-course">
-                    <h3>{transaction.course_title}</h3>
+                  <div className="transaction-clase">
+                    <h3>{transaction.clase_title}</h3>
                     <span className="transaction-id">
                       <FiCreditCard />
                       ID: {transaction.mp_payment_id}
@@ -361,8 +361,8 @@ const PurchaseHistory = () => {
           </div>
           <h2>No hay compras aún</h2>
           <p>Cuando realices una compra, aparecerá aquí tu historial completo</p>
-          <a href="/cursos" className="browse-courses-btn">
-            Explorar Cursos
+          <a href="/clases" className="browse-clases-btn">
+            Explorar Clases
           </a>
         </div>
       )}

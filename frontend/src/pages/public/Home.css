@@ -245,9 +245,20 @@
 .hero-tagline {
   font-size: 1.05rem;
   color: rgba(255,255,255,.78);
-  line-height: 1.9;
-  max-width: 480px;
-  margin-bottom: 2.5rem;
+  line-height: 1.85;
+  max-width: 580px;
+  margin-bottom: 3rem;
+}
+
+.hero-author-name {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-top: 1.8rem;
 }
 
 .hero-ctas {

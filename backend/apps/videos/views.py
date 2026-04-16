@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
-from apps.courses.models import Lesson
-from apps.payments.models import CourseAccess
+from apps.clases.models import Lesson
+from apps.payments.models import ClaseAccess
 from .models import VideoToken
 from .cloudflare import CloudflareStreamService
 
@@ -20,9 +20,9 @@ def get_video_token(request, lesson_id):
 
     # Verificar si es preview o tiene acceso
     if not lesson.is_preview:
-        has_access = CourseAccess.objects.filter(
+        has_access = ClaseAccess.objects.filter(
             user=user,
-            course=lesson.module.course,
+            clase=lesson.module.clase,
             is_active=True
         ).exists()
 
@@ -69,9 +69,9 @@ def get_video_info(request, lesson_id):
     user = request.user
 
     if not lesson.is_preview:
-        has_access = CourseAccess.objects.filter(
+        has_access = ClaseAccess.objects.filter(
             user=user,
-            course=lesson.module.course,
+            clase=lesson.module.clase,
             is_active=True
         ).exists()
 

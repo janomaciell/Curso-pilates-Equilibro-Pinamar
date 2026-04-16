@@ -68,7 +68,7 @@ const Login = () => {
   };
 
   const benefits = [
-    { icon: <FiCheck />, text: 'Acceso inmediato a todos los cursos' },
+    { icon: <FiCheck />, text: 'Acceso inmediato a todas las clases' },
     { icon: <FiStar />,  text: 'Contenido actualizado constantemente' },
     { icon: <FiUsers />, text: 'Comunidad activa de alumnas' },
   ];

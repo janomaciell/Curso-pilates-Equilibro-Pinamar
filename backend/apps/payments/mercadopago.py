@@ -17,7 +17,7 @@ class MercadoPagoService:
             )
         self.sdk = mercadopago.SDK(token)
 
-    def create_preference(self, course, user, return_url, notification_url):
+    def create_preference(self, clase, user, return_url, notification_url):
         frontend_url = getattr(settings, 'FRONTEND_URL', '').strip()
         if frontend_url:
             base_url = frontend_url.rstrip('/')
@@ -29,9 +29,9 @@ class MercadoPagoService:
         preference_data = {
             "items": [
                 {
-                    "title": course.title,
+                    "title": clase.title,
                     "quantity": 1,
-                    "unit_price": float(course.price),
+                    "unit_price": float(clase.price),
                     "currency_id": "ARS",
                 }
             ],
@@ -47,16 +47,16 @@ class MercadoPagoService:
             },
             "auto_return": "approved",
             "notification_url": notification_url,
-            "statement_descriptor": "CURSO PILATES",
-            "external_reference": f"user_{user.id}_course_{course.id}",
+            "statement_descriptor": "CLASE PILATES",
+            "external_reference": f"user_{user.id}_clase_{clase.id}",
             "metadata": {
                 "user_id": user.id,
-                "course_id": course.id,
+                "clase_id": clase.id,
             }
         }
 
         try:
-            logger.info(f"[MP] Creating preference for course: {course.title}")
+            logger.info(f"[MP] Creating preference for clase: {clase.title}")
             logger.info(f"[MP] Notification URL: {notification_url}")
             logger.info(f"[MP] Back URLs: success={base_url}/payment-success, etc.")
             

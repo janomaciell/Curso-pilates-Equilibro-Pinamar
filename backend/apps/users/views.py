@@ -185,12 +185,12 @@ def change_password(request):
 @permission_classes([IsAuthenticated])
 def get_user_stats(request):
     """Obtener estadísticas del usuario"""
-    from apps.payments.models import CourseAccess, Transaction
-    from apps.courses.models import LessonProgress
+    from apps.payments.models import ClaseAccess, Transaction
+    from apps.clases.models import LessonProgress
     
     user = request.user
     
-    courses_purchased = CourseAccess.objects.filter(user=user, is_active=True).count()
+    clases_purchased = ClaseAccess.objects.filter(user=user, is_active=True).count()
     total_spent = Transaction.objects.filter(
         user=user, 
         status='approved'
@@ -202,7 +202,7 @@ def get_user_stats(request):
     ).count()
     
     return Response({
-        'courses_purchased': courses_purchased,
+        'clases_purchased': clases_purchased,
         'total_spent': float(total_spent),
         'lessons_completed': lessons_completed
     })

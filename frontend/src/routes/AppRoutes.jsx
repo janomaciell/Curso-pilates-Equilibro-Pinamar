@@ -4,8 +4,8 @@ import PublicRoute from './PublicRoute';
 
 // Public Pages
 import Home from '../pages/public/Home';
-import CourseCatalog from '../pages/public/CourseCatalog';
-import CourseDetailPublic from '../pages/public/CourseDetailPublic';
+import ClaseCatalog from '../pages/public/ClaseCatalog';
+import ClaseDetailPublic from '../pages/public/ClaseDetailPublic';
 import Login from '../pages/public/Login';
 import Register from '../pages/public/Register';
 import PaymentResult from '../pages/public/PaymentResult';
@@ -13,8 +13,8 @@ import ComoFunciona from '../pages/public/ComoFunciona';
 
 // Private Pages
 import Dashboard from '../pages/private/Dashboard';
-import MyCourses from '../pages/private/MyCourses';
-import CoursePlayer from '../pages/private/CoursePlayer';
+import MyClases from '../pages/private/MyClases';
+import ClasePlayer from '../pages/private/ClasePlayer';
 import Profile from '../pages/private/Profile';
 import PurchaseHistory from '../pages/private/PurchaseHistory';
 
@@ -23,8 +23,8 @@ const AppRoutes = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Home />} />
-      <Route path="/cursos" element={<CourseCatalog />} />
-      <Route path="/cursos/:slug" element={<CourseDetailPublic />} />
+      <Route path="/clases" element={<ClaseCatalog />} />
+      <Route path="/clases/:slug" element={<ClaseDetailPublic />} />
       <Route path="/como-funciona" element={<ComoFunciona />} />
       
       <Route 
@@ -61,19 +61,19 @@ const AppRoutes = () => {
       />
       
       <Route 
-        path="/mis-cursos" 
+        path="/mis-clases" 
         element={
           <PrivateRoute>
-            <MyCourses />
+            <MyClases />
           </PrivateRoute>
         } 
       />
       
       <Route 
-        path="/curso/:courseId/player" 
+        path="/clase/:claseId/player" 
         element={
           <PrivateRoute>
-            <CoursePlayer />
+            <ClasePlayer />
           </PrivateRoute>
         } 
       />

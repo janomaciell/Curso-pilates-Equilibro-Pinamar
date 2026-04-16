@@ -3,13 +3,13 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FiCheck, FiX, FiClock, FiArrowRight, FiArrowLeft,
 } from 'react-icons/fi';
-import { coursesAPI } from '../../api/courses';
+import { clasesAPI } from '../../api/clases';
 import { usePayment } from '../../hooks/usePayment';
 import { useAuth } from '../../hooks/useAuth';
-import CourseDetail from '../../courses/CourseDetail';
+import ClaseDetail from '../../clases/ClaseDetail';
 import Loader from '../../components/common/Loader';
 import gsap from 'gsap';
-import './CourseDetailPublic.css';
+import './ClaseDetailPublic.css';
 
 /* ─────────────────────────────────────────────────────────────────
    PAYMENT BANNER
@@ -56,14 +56,14 @@ function PaymentBanner({ result, bannerRef, onDismiss, onAction }) {
    NOT FOUND
 ───────────────────────────────────────────────────────────────── */
 
-function CourseNotFound({ onBack }) {
+function ClaseNotFound({ onBack }) {
   return (
     <div className="cdp-notfound">
       <div className="cdp-notfound__card">
         <span className="cdp-notfound__symbol" aria-hidden="true">✦</span>
-        <h2 className="cdp-notfound__title">Curso no encontrado</h2>
+        <h2 className="cdp-notfound__title">Clase no encontrada</h2>
         <p className="cdp-notfound__msg">
-          El curso que buscás no existe o fue eliminado.
+          La clase que buscás no existe o fue eliminado.
         </p>
         <button className="cdp-notfound__btn" onClick={onBack}>
           <FiArrowLeft size={14} /> Volver al catálogo
@@ -77,14 +77,14 @@ function CourseNotFound({ onBack }) {
    MAIN
 ───────────────────────────────────────────────────────────────── */
 
-const CourseDetailPublic = () => {
+const ClaseDetailPublic = () => {
   const { slug }                          = useParams();
   const navigate                          = useNavigate();
   const [searchParams]                    = useSearchParams();
   const { isAuthenticated }               = useAuth();
   const { createPayment, checkPendingPayment, cancelPolling, loading: paymentLoading } = usePayment();
 
-  const [course, setCourse]               = useState(null);
+  const [clase, setClase]               = useState(null);
   const [hasAccess, setHasAccess]         = useState(false);
   const [loading, setLoading]             = useState(true);
   const [paymentResult, setPaymentResult] = useState(null);
@@ -94,7 +94,7 @@ const CourseDetailPublic = () => {
 
   /* ── Carga inicial ── */
   useEffect(() => {
-    loadCourseDetail();
+    loadClaseDetail();
     checkReturnFromPayment();
     return () => cancelPolling();
   }, [slug]);
@@ -111,27 +111,27 @@ const CourseDetailPublic = () => {
 
   /* ── Fade entrada del contenido ── */
   useEffect(() => {
-    if (!loading && course) {
+    if (!loading && clase) {
       gsap.fromTo('.cdp-page',
         { opacity: 0 },
         { opacity: 1, duration: 0.5, ease: 'power2.out' }
       );
     }
-  }, [loading, course]);
+  }, [loading, clase]);
 
-  const loadCourseDetail = async () => {
+  const loadClaseDetail = async () => {
     try {
       setLoading(true);
-      const data = await coursesAPI.getCourseBySlug(slug);
-      setCourse(data);
+      const data = await clasesAPI.getClaseBySlug(slug);
+      setClase(data);
 
       if (isAuthenticated) {
-        const accessData = await coursesAPI.checkCourseAccess(data.id);
+        const accessData = await clasesAPI.checkClaseAccess(data.id);
         setHasAccess(accessData.has_access);
 
         if (accessData.has_access) {
           try {
-            const progressData = await coursesAPI.getLessonProgress(data.id);
+            const progressData = await clasesAPI.getLessonProgress(data.id);
             const list = Array.isArray(progressData) ? progressData : (progressData?.results ?? []);
             const map = {};
             list.forEach(p => { map[p.lesson] = p; });
@@ -156,11 +156,11 @@ const CourseDetailPublic = () => {
 
   const handlePurchase = async () => {
     if (!isAuthenticated) {
-      navigate('/login', { state: { from: `/cursos/${slug}` } });
+      navigate('/login', { state: { from: `/clases/${slug}` } });
       return;
     }
 
-    const result = await createPayment(course.id, { openInPopup: true });
+    const result = await createPayment(clase.id, { openInPopup: true });
 
     if (result.success) {
       if (result.status === 'approved') {
@@ -168,9 +168,9 @@ const CourseDetailPublic = () => {
         setPaymentResult({
           status: 'approved',
           title: '¡Felicitaciones!',
-          message: '¡Pago aprobado! Ya tenés acceso al curso.',
+          message: '¡Pago aprobado! Ya tenés acceso a la clase.',
         });
-        loadCourseDetail();
+        loadClaseDetail();
       } else if (result.status === 'rejected') {
         setPaymentResult({
           status: 'rejected',
@@ -181,7 +181,7 @@ const CourseDetailPublic = () => {
         setPaymentResult({
           status: 'pending',
           title: 'Pago pendiente',
-          message: 'No pudimos verificar el pago automáticamente. Revisá tu email o "Mis Cursos".',
+          message: 'No pudimos verificar el pago automáticamente. Revisá tu email o "Mis Clases".',
         });
       }
     } else {
@@ -198,7 +198,7 @@ const CourseDetailPublic = () => {
       y: -80, opacity: 0, duration: 0.35, ease: 'power2.in',
       onComplete: () => {
         setPaymentResult(null);
-        navigate(`/cursos/${slug}`, { replace: true });
+        navigate(`/clases/${slug}`, { replace: true });
       },
     });
   };
@@ -216,8 +216,8 @@ const CourseDetailPublic = () => {
       onClick: () => { dismissBanner(); handlePurchase(); },
     };
     if (status === 'pending') return {
-      text: 'Ir a Mis Cursos',
-      onClick: () => navigate('/mis-cursos'),
+      text: 'Ir a Mis Clases',
+      onClick: () => navigate('/mis-clases'),
     };
     return null;
   };
@@ -225,7 +225,7 @@ const CourseDetailPublic = () => {
   /* ── Render ── */
   if (loading) return <Loader fullScreen />;
 
-  if (!course) return <CourseNotFound onBack={() => navigate('/cursos')} />;
+  if (!clase) return <ClaseNotFound onBack={() => navigate('/clases')} />;
 
   return (
     <div className="cdp-page">
@@ -238,8 +238,8 @@ const CourseDetailPublic = () => {
         />
       )}
 
-      <CourseDetail
-        course={course}
+      <ClaseDetail
+        clase={clase}
         hasAccess={hasAccess}
         onPurchase={handlePurchase}
         loading={paymentLoading}
@@ -249,4 +249,4 @@ const CourseDetailPublic = () => {
   );
 };
 
-export default CourseDetailPublic;
+export default ClaseDetailPublic;

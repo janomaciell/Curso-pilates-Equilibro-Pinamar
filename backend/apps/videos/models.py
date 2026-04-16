@@ -1,5 +1,5 @@
 from django.db import models
-from apps.courses.models import Lesson
+from apps.clases.models import Lesson
 
 class VideoToken(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='video_tokens')

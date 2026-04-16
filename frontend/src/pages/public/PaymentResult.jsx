@@ -27,13 +27,13 @@ const PaymentResult = () => {
       if (payment) {
         if (payment.status === 'approved') {
           setStatus('success');
-          setTimeout(() => navigate('/mis-cursos', { replace: true }), 2500);
+          setTimeout(() => navigate('/mis-clases', { replace: true }), 2500);
         } else if (payment.status === 'rejected' || payment.status === 'cancelled') {
           setStatus('failure');
-          setTimeout(() => navigate('/mis-cursos', { replace: true }), 4000);
+          setTimeout(() => navigate('/mis-clases', { replace: true }), 4000);
         } else {
           setStatus('pending');
-          setTimeout(() => navigate('/mis-cursos', { replace: true }), 3000);
+          setTimeout(() => navigate('/mis-clases', { replace: true }), 3000);
         }
       } else {
         // Sin preference_id en localStorage (ej. llegó directo por URL)
@@ -45,7 +45,7 @@ const PaymentResult = () => {
         } else {
           setStatus('success');
         }
-        setTimeout(() => navigate('/mis-cursos', { replace: true }), 3000);
+        setTimeout(() => navigate('/mis-clases', { replace: true }), 3000);
       }
     };
 
@@ -72,7 +72,7 @@ const PaymentResult = () => {
         <div className="payment-result-box success">
           <div className="payment-result-icon"><FiCheck /></div>
           <h1>¡Pago acreditado!</h1>
-          <p>Ya podés entrar al curso desde Mis Cursos.</p>
+          <p>Ya podés entrar al clase desde Mis Clases.</p>
           <p className="payment-result-redirect">Redirigiendo...</p>
         </div>
       </div>
@@ -85,8 +85,8 @@ const PaymentResult = () => {
         <div className="payment-result-box failure">
           <div className="payment-result-icon"><FiX /></div>
           <h1>El pago no se completó</h1>
-          <p>Si se debió dinero, puede tardar unos minutos. Revisá en Mis Cursos o en el historial.</p>
-          <p className="payment-result-redirect">Redirigiendo a Mis Cursos...</p>
+          <p>Si se debió dinero, puede tardar unos minutos. Revisá en Mis Clases o en el historial.</p>
+          <p className="payment-result-redirect">Redirigiendo a Mis Clases...</p>
         </div>
       </div>
     );
@@ -97,7 +97,7 @@ const PaymentResult = () => {
       <div className="payment-result-box pending">
         <div className="payment-result-icon"><FiClock /></div>
         <h1>Pago pendiente</h1>
-        <p>Cuando se acredite, el curso aparecerá en Mis Cursos.</p>
+        <p>Cuando se acredite, el clase aparecerá en Mis Clases.</p>
         <p className="payment-result-redirect">Redirigiendo...</p>
       </div>
     </div>

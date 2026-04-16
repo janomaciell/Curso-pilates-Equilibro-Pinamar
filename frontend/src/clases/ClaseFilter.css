@@ -1,9 +1,9 @@
 /* ================================================
-   CourseFilter.css — Equilibrio Pinamar Brand
+   ClaseFilter.css — Equilibrio Pinamar Brand
    Layout: horizontal bar
    ================================================ */
 
-  .course-filter {
+  .clase-filter {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -166,8 +166,8 @@
   }
   
   /* Botón limpiar — al final de la fila */
-  .course-filter .btn-secondary,
-  .course-filter button[class*='secondary'] {
+  .clase-filter .btn-secondary,
+  .clase-filter button[class*='secondary'] {
     padding: 0.3rem 0.9rem;
     background: var(--bg-surface, #ead5c7);
     border: 1px solid rgba(185,137,103,0.32);
@@ -181,8 +181,8 @@
     flex-shrink: 0;
     margin-left: 0.75rem;
   }
-  .course-filter .btn-secondary:hover,
-  .course-filter button[class*='secondary']:hover {
+  .clase-filter .btn-secondary:hover,
+  .clase-filter button[class*='secondary']:hover {
     background: var(--tan, #b98967);
     border-color: var(--tan, #b98967);
     color: var(--white, #fff);
@@ -190,7 +190,7 @@
   
   /* ─── Responsive ─────────────────────────────────── */
   @media (max-width: 768px) {
-    .course-filter {
+    .clase-filter {
       flex-direction: column;
       align-items: stretch;
       justify-content: center;
@@ -199,7 +199,7 @@
       flex-wrap: nowrap;
       padding-bottom: 0.15rem;
     }
-    .course-filter::-webkit-scrollbar { display: none; }
+    .clase-filter::-webkit-scrollbar { display: none; }
 
     .filter-group {
       width: 100%;
@@ -220,8 +220,8 @@
       margin: 0.1rem 0 0.2rem 0;
     }
 
-    .course-filter .btn-secondary,
-    .course-filter button[class*='secondary'] {
+    .clase-filter .btn-secondary,
+    .clase-filter button[class*='secondary'] {
       margin-left: 0;
       margin-top: 0.1rem;
     }

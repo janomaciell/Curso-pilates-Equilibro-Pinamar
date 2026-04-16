@@ -340,7 +340,7 @@
   gap: 2rem;
 }
 
-.transaction-course h3 {
+.transaction-clase h3 {
   font-family: var(--font-display);
   font-size: 1.5rem;
   font-weight: 700;
@@ -600,7 +600,7 @@
   margin-bottom: 2.5rem;
 }
 
-.browse-courses-btn {
+.browse-clases-btn {
   display: inline-block;
   padding: 1.25rem 3rem;
   background: var(--primary-color);
@@ -613,7 +613,7 @@
   box-shadow: 0 4px 12px rgba(185, 137, 103, 0.28);
 }
 
-.browse-courses-btn:hover {
+.browse-clases-btn:hover {
   background: var(--secondary-color);
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(185, 137, 103, 0.36);
@@ -714,7 +714,7 @@
     padding: 1.5rem;
   }
 
-  .transaction-course h3 {
+  .transaction-clase h3 {
     font-size: 1.25rem;
   }
 

@@ -1,38 +1,38 @@
 from rest_framework import serializers
-from .models import Transaction, CourseAccess
-from apps.courses.serializers import CourseListSerializer
+from .models import Transaction, ClaseAccess
+from apps.clases.serializers import ClaseListSerializer
 
 class TransactionSerializer(serializers.ModelSerializer):
-    course_title = serializers.CharField(source='course.title', read_only=True)
+    clase_title = serializers.CharField(source='clase.title', read_only=True)
     user_email = serializers.CharField(source='user.email', read_only=True)
 
     class Meta:
         model = Transaction
-        fields = ('id', 'user_email', 'course', 'course_title', 'mp_payment_id', 
+        fields = ('id', 'user_email', 'clase', 'clase_title', 'mp_payment_id', 
                  'amount', 'status', 'payment_method', 'created_at', 'approved_at')
         read_only_fields = ('id', 'user', 'mp_payment_id', 'status', 'created_at', 'approved_at')
 
 
-class CourseAccessSerializer(serializers.ModelSerializer):
-    course = CourseListSerializer(read_only=True)
+class ClaseAccessSerializer(serializers.ModelSerializer):
+    clase = ClaseListSerializer(read_only=True)
     progress = serializers.SerializerMethodField()
 
     class Meta:
-        model = CourseAccess
-        fields = ('id', 'course', 'is_active', 'purchased_at', 'progress')
+        model = ClaseAccess
+        fields = ('id', 'clase', 'is_active', 'purchased_at', 'progress')
 
     def get_progress(self, obj):
-        from apps.courses.models import LessonProgress
-        total_lessons = obj.course.total_lessons
+        from apps.clases.models import LessonProgress
+        total_lessons = obj.clase.total_lessons
         if total_lessons == 0:
             return 0
         completed_lessons = LessonProgress.objects.filter(
             user=obj.user,
-            lesson__module__course=obj.course,
+            lesson__module__clase=obj.clase,
             completed=True
         ).count()
         return int((completed_lessons / total_lessons) * 100)
 
 
 class CreatePaymentSerializer(serializers.Serializer):
-    course_id = serializers.IntegerField()
+    clase_id = serializers.IntegerField()

@@ -56,11 +56,11 @@ const Navbar = () => {
 
         <ul className={`navbar-menu ${menuOpen ? 'navbar-menu--open' : ''}`}>
           <li><Link to="/" onClick={closeMenu}>Inicio</Link></li>
-          <li><Link to="/cursos" onClick={closeMenu}>Cursos</Link></li>
+          <li><Link to="/clases" onClick={closeMenu}>Clases</Link></li>
           
           {isAuthenticated ? (
             <>
-              <li><Link to="/mis-cursos" onClick={closeMenu}>Mis Cursos</Link></li>
+              <li><Link to="/mis-clases" onClick={closeMenu}>Mis Clases</Link></li>
               <li className="navbar-dropdown">
                 <button className="dropdown-toggle" type="button">
                   <FiUser />

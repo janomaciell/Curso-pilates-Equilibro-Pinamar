@@ -1,9 +1,9 @@
 /* =====================================================================
-   CoursePlayer.css — Classic Professional Layout
-   Réplica 1:1 del HTML de referencia, tokens del sistema MyCourses
+   ClasePlayer.css — Classic Professional Layout
+   Réplica 1:1 del HTML de referencia, tokens del sistema MyClases
    ===================================================================== */
 
-/* ─── Tokens (espejo exacto de MyCourses) ───────────────────────────── */
+/* ─── Tokens (espejo exacto de MyClases) ───────────────────────────── */
 :root {
   /* Paleta — Equilibrio Pinamar */
   --primary-color: #b98967;
@@ -62,7 +62,7 @@
 }
 
 /* ─── Root page ─────────────────────────────────────────────────────── */
-.course-player-page {
+.clase-player-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -137,8 +137,8 @@
   flex-shrink: 0;
 }
 
-/* Curso info */
-.cp-course-info {
+/* Clase info */
+.cp-clase-info {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
@@ -146,7 +146,7 @@
 }
 
 /* text-lg font-bold — igual al HTML */
-.cp-course-title {
+.cp-clase-title {
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-1);
@@ -159,7 +159,7 @@
 }
 
 /* Chapter — text-xs font-medium text-slate-500 */
-.cp-course-chapter {
+.cp-clase-chapter {
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--text-3);
@@ -702,7 +702,7 @@
   height: 18px;
 }
 
-/* Badge contador de recursos */
+/* Badge contador de reclases */
 .cp-tab-count {
   background: #f3f4f6;
   color: var(--text-2);
@@ -1383,12 +1383,12 @@
     padding: 0 1rem;
   }
 
-  /* En mobile el botón ← ya lleva a mis-cursos, ocultamos el de Panel */
+  /* En mobile el botón ← ya lleva a mis-clases, ocultamos el de Panel */
   .cp-dashboard-btn {
     display: none;
   }
 
-  .cp-course-title {
+  .cp-clase-title {
     max-width: 160px;
   }
 

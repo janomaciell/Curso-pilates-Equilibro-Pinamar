@@ -50,7 +50,7 @@ export const usePayment = () => {
     });
   };
 
-  const createPayment = async (courseId, options = {}) => {
+  const createPayment = async (claseId, options = {}) => {
     // ⚠️ IMPORTANTE: window.open() debe llamarse ANTES de cualquier await,
     // de lo contrario el navegador lo bloquea como popup no solicitado.
     // Abrimos una ventana en blanco sincrónicamente al detectar el clic del usuario,
@@ -65,7 +65,7 @@ export const usePayment = () => {
       setError(null);
 
       // 1. Crear la preferencia de pago en el backend
-      const paymentData = await paymentsAPI.createPayment(courseId);
+      const paymentData = await paymentsAPI.createPayment(claseId);
 
       console.log('[Payment] Preferencia creada:', paymentData);
 

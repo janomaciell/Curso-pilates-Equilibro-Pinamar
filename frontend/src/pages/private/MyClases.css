@@ -1,4 +1,4 @@
-/* My Courses - Equilibrio Pinamar (identidad de marca) */
+/* My Clases - Equilibrio Pinamar (identidad de marca) */
 
 /* Variables de marca */
 :root {
@@ -31,26 +31,26 @@
    PAGE BASE
    =================================== */
 
-.my-courses-page {
+.my-clases-page {
   min-height: 100vh;
-  background: #f6f0ea; /* mismo fondo suave que /cursos */
+  background: #f6f0ea; /* mismo fondo suave que /clases */
 }
 
-/* El hero reutiliza las clases globales de CourseCatalog.css
+/* El hero reutiliza las clases globales de ClaseCatalog.css
    (.catalog-hero, .hero-gradient, .hero-grain, .hero-inner, etc.)
    Solo usamos esta clase como "marca" por si queremos ajustes futuros. */
-.my-courses-hero {
+.my-clases-hero {
   min-height: 62vh;
   align-items: center;
 }
 
-.my-courses-hero .hero-inner {
+.my-clases-hero .hero-inner {
   padding: 6rem 2rem 5rem;
   max-width: 940px;
   margin: 0 auto;
 }
 
-.my-courses-hero .catalog-hero-title-mycourses {
+.my-clases-hero .catalog-hero-title-myclases {
   margin-top: 0.5rem;
   margin-bottom: 1.6rem;
 }
@@ -59,7 +59,7 @@
    CONTAINER
    =================================== */
 
-.my-courses-container {
+.my-clases-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 4rem 5%;
@@ -291,27 +291,27 @@
    COURSES GRID
    =================================== */
 
-.my-courses-grid {
+.my-clases-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 2.5rem;
 }
 
-.my-courses-grid.list-view {
+.my-clases-grid.list-view {
   grid-template-columns: 1fr;
 }
 
-.my-courses-grid.list-view .my-course-card {
+.my-clases-grid.list-view .my-clase-card {
   display: grid;
   grid-template-columns: 320px 1fr;
   gap: 0;
 }
 
-.my-courses-grid.list-view .course-image-wrapper {
+.my-clases-grid.list-view .clase-image-wrapper {
   height: 100%;
 }
 
-.my-course-card {
+.my-clase-card {
   background: var(--white);
   border-radius: 20px;
   overflow: hidden;
@@ -320,14 +320,14 @@
   box-shadow: var(--shadow-sm);
 }
 
-.my-course-card:hover {
+.my-clase-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
   border-color: var(--primary-color);
 }
 
-/* Course Image */
-.course-image-wrapper {
+/* Clase Image */
+.clase-image-wrapper {
   position: relative;
   width: 100%;
   height: 240px;
@@ -336,18 +336,18 @@
   background: var(--gray-100);
 }
 
-.course-image-wrapper img {
+.clase-image-wrapper img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
 }
 
-.my-course-card:hover .course-image-wrapper img {
+.my-clase-card:hover .clase-image-wrapper img {
   transform: scale(1.1);
 }
 
-.course-overlay {
+.clase-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(185, 137, 103, 0.9), rgba(153, 108, 78, 0.9));
@@ -358,7 +358,7 @@
   transition: opacity 0.4s ease;
 }
 
-.my-course-card:hover .course-overlay {
+.my-clase-card:hover .clase-overlay {
   opacity: 1;
 }
 
@@ -424,12 +424,12 @@
   z-index: 10;
 }
 
-/* Course Info */
-.course-info {
+/* Clase Info */
+.clase-info {
   padding: 2rem;
 }
 
-.course-title {
+.clase-title {
   font-family: var(--font-display);
   font-size: 1.5rem;
   color: var(--gray-800);
@@ -443,11 +443,11 @@
   overflow: hidden;
 }
 
-.course-title:hover {
+.clase-title:hover {
   color: var(--primary-color);
 }
 
-.course-short-desc {
+.clase-short-desc {
   color: var(--gray-600);
   font-size: 1rem;
   margin-bottom: 1.5rem;
@@ -458,7 +458,7 @@
   overflow: hidden;
 }
 
-.catalog-hero-title-mycourses {
+.catalog-hero-title-myclases {
   font-family: var(--font-display);
   font-size: clamp(3.2rem, 8vw, 7rem);
   font-weight: 400;
@@ -469,13 +469,13 @@
   opacity: 0; /* GSAP lo anima a 1 */
 }
 
-.catalog-hero-title-mycourses em {
+.catalog-hero-title-myclases em {
   font-style: italic;
   color: var(--primary-color);
 }
 
 /* Meta */
-.course-meta {
+.clase-meta {
   display: flex;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
@@ -540,7 +540,7 @@
 }
 
 /* Footer */
-.course-footer {
+.clase-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -593,7 +593,7 @@
    EMPTY STATE
    =================================== */
 
-.empty-courses {
+.empty-clases {
   max-width: 600px;
   margin: 6rem auto;
   text-align: center;
@@ -724,7 +724,7 @@
    =================================== */
 
 @media (max-width: 1024px) {
-  .my-courses-container {
+  .my-clases-container {
     padding: 3rem 2rem;
   }
 
@@ -742,15 +742,15 @@
     justify-content: space-between;
   }
 
-  .my-courses-grid {
+  .my-clases-grid {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
 
-  .my-courses-grid.list-view {
+  .my-clases-grid.list-view {
     grid-template-columns: 1fr;
   }
 
-  .my-courses-grid.list-view .my-course-card {
+  .my-clases-grid.list-view .my-clase-card {
     grid-template-columns: 1fr;
   }
 }
@@ -760,7 +760,7 @@
    =================================== */
 
 @media (max-width: 768px) {
-  .my-courses-hero {
+  .my-clases-hero {
     padding: 4rem 1.5rem 3rem;
   }
 
@@ -774,7 +774,7 @@
     height: 35px;
   }
 
-  .my-courses-container {
+  .my-clases-container {
     padding: 2rem 1rem;
   }
 
@@ -800,29 +800,29 @@
     width: 100%;
   }
 
-  .my-courses-grid {
+  .my-clases-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
 
-  .course-image-wrapper {
+  .clase-image-wrapper {
     height: 220px;
   }
 
-  .course-info {
+  .clase-info {
     padding: 1.5rem;
   }
 
-  .course-title {
+  .clase-title {
     font-size: 1.3rem;
   }
 
-  .course-meta {
+  .clase-meta {
     flex-direction: column;
     gap: 0.75rem;
   }
 
-  .course-footer {
+  .clase-footer {
     flex-direction: column;
     align-items: stretch;
   }
@@ -832,7 +832,7 @@
     justify-content: center;
   }
 
-  .empty-courses {
+  .empty-clases {
     padding: 3rem 2rem;
   }
 
@@ -860,7 +860,7 @@
    INLINE PLAYER OVERLAY
    =================================== */
 
-.mycourses-player-overlay {
+.myclases-player-overlay {
   position: fixed;
   inset: 0;
   background: rgba(45, 45, 45, 0.85);
@@ -870,12 +870,12 @@
   z-index: 50;
 }
 
-.mycourses-player-backdrop {
+.myclases-player-backdrop {
   position: absolute;
   inset: 0;
 }
 
-.mycourses-player-modal {
+.myclases-player-modal {
   position: relative;
   background: var(--gray-800);
   border-radius: 20px;
@@ -887,7 +887,7 @@
   z-index: 1;
 }
 
-.mycourses-player-close {
+.myclases-player-close {
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -905,32 +905,32 @@
   transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.mycourses-player-close:hover {
+.myclases-player-close:hover {
   background: rgba(31, 41, 55, 0.95);
   transform: scale(1.05);
 }
 
-.mycourses-player-header {
+.myclases-player-header {
   margin-bottom: 1rem;
 }
 
-.mycourses-player-header h2 {
+.myclases-player-header h2 {
   font-family: var(--font-display);
   font-size: 1.4rem;
   color: #f9fafb;
   margin-bottom: 0.25rem;
 }
 
-.mycourses-player-header p {
+.myclases-player-header p {
   font-size: 0.95rem;
   color: #9ca3af;
 }
 
-.mycourses-player-body {
+.myclases-player-body {
   margin-top: 0.5rem;
 }
 
-.mycourses-player-loading {
+.myclases-player-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -942,12 +942,12 @@
 }
 
 @media (max-width: 768px) {
-  .mycourses-player-modal {
+  .myclases-player-modal {
     width: 95%;
     padding: 1rem;
   }
 
-  .mycourses-player-header h2 {
+  .myclases-player-header h2 {
     font-size: 1.1rem;
   }
 }

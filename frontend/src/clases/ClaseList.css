@@ -1,8 +1,8 @@
 /* ================================================
-   CourseList.css — Equilibrio Pinamar · Dark
+   ClaseList.css — Equilibrio Pinamar · Dark
    ================================================ */
 
-   .courses-loading {
+   .clases-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -14,41 +14,41 @@
     font-size: 0.9rem;
   }
   
-  .courses-grid {
+  .clases-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.25rem;
     padding: 0 7rem;
   }
   
-  .courses-list {
+  .clases-list {
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
   }
   
   @media (max-width: 640px) {
-    .courses-grid {
+    .clases-grid {
       grid-template-columns: 1fr;
       gap: 1rem;
       padding: 0 1rem;
     }
-    .courses-list {
+    .clases-list {
       padding: 0 1rem;
     }
-    .courses-loading {
+    .clases-loading {
       padding: 0 1rem;
     }
-    .courses-section {
+    .clases-section {
       padding: 0 1rem;
     }
-    .courses-grid {
+    .clases-grid {
       padding: 0 1rem;
     }
-    .courses-list {
+    .clases-list {
       padding: 0 1rem;
     }
-    .courses-loading {
+    .clases-loading {
       padding: 0 1rem;
     }
   }

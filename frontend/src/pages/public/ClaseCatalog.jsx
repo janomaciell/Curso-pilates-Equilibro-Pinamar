@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { coursesAPI } from '../../api/courses';
-import CourseList from '../../courses/CourseList';
+import { clasesAPI } from '../../api/clases';
+import ClaseList from '../../clases/ClaseList';
 import { FiSearch, FiX, FiArrowRight, FiArrowLeft, FiSliders } from 'react-icons/fi';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import './CourseCatalog.css';
+import './ClaseCatalog.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -86,8 +86,8 @@ function EmptyState({ msg, onReset }) {
   );
 }
 
-/* Contador de cursos con dots de carga */
-function CourseCount({ loading, count }) {
+/* Contador de clases con dots de carga */
+function ClaseCount({ loading, count }) {
   if (loading) {
     return (
       <span className="cc-count">
@@ -99,7 +99,7 @@ function CourseCount({ loading, count }) {
   }
   return (
     <span className="cc-count">
-      <strong>{count}</strong> curso{count !== 1 ? 's' : ''}
+      <strong>{count}</strong> clase{count !== 1 ? 's' : ''}
     </span>
   );
 }
@@ -108,10 +108,10 @@ function CourseCount({ loading, count }) {
    MAIN COMPONENT
 ───────────────────────────────────────────────────────────────── */
 
-const CourseCatalog = () => {
+const ClaseCatalog = () => {
   /* ── Estado principal ── */
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [courses, setCourses]                   = useState([]);
+  const [clases, setClases]                   = useState([]);
   const [loading, setLoading]                   = useState(false);
   const [categoryStats, setCategoryStats]       = useState({});
 
@@ -158,15 +158,15 @@ const CourseCatalog = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await coursesAPI.getCategoryStats();
+        const data = await clasesAPI.getCategoryStats();
         setCategoryStats(data || {});
       } catch { /* silencioso */ }
     };
     load();
   }, []);
 
-  /* ── Cargar cursos de categoría ── */
-  const loadCourses = useCallback(async () => {
+  /* ── Cargar clases de categoría ── */
+  const loadClases = useCallback(async () => {
     if (!selectedCategory) return;
     setLoading(true);
     try {
@@ -181,13 +181,13 @@ const CourseCatalog = () => {
       if (sort === 'price_asc')  params.ordering = 'price';
       if (sort === 'price_desc') params.ordering = '-price';
       if (sort === 'newest')     params.ordering = '-created_at';
-      const data = await coursesAPI.getAllCourses(params);
-      setCourses(data.results ?? data);
-    } catch { setCourses([]); }
+      const data = await clasesAPI.getAllClases(params);
+      setClases(data.results ?? data);
+    } catch { setClases([]); }
     finally { setLoading(false); }
   }, [selectedCategory, level, sort, search, onlyFeatured]);
 
-  useEffect(() => { loadCourses(); }, [loadCourses]);
+  useEffect(() => { loadClases(); }, [loadClases]);
 
   /* ── Búsqueda global con debounce ── */
   useEffect(() => {
@@ -197,7 +197,7 @@ const CourseCatalog = () => {
     searchTimer.current = setTimeout(async () => {
       setGlobalLoading(true);
       try {
-        const data = await coursesAPI.getAllCourses({ search: globalSearch });
+        const data = await clasesAPI.getAllClases({ search: globalSearch });
         setGlobalResults(data.results ?? data);
       } catch { setGlobalResults([]); }
       finally { setGlobalLoading(false); }
@@ -258,7 +258,7 @@ const CourseCatalog = () => {
   const cat = selectedCategory === 'all'
     ? {
         id: 'all',
-        label: 'Todos los cursos',
+        label: 'Todas las clases',
         desc: 'Explorá nuestra biblioteca completa de clases de Pilates, Stretching e Hipopresivos.',
         image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200&q=85',
         accent: '#8c6544'
@@ -285,11 +285,17 @@ const CourseCatalog = () => {
           <span className="cc-hero-eyebrow">— Equilibrio Pinamar</span>
 
           <h1 className="cc-hero-title">
-            {['Explorá',  <br/>,'nuestros', 'cursos'].map((w, i) => (
-              <span className="cc-word-wrap" key={i}>
-                <span className={`cc-word${i === 2 ? ' cc-word--accent' : ''}`}>{w} </span>
-              </span>
-            ))}
+            <span className="cc-word-wrap">
+              <span className="cc-word">Explorá </span>
+            </span>
+            <br />
+            <span className="cc-word-wrap">
+              <span className="cc-word cc-word--accent">nuestras </span>
+            </span>
+            
+            <span className="cc-word-wrap">
+              <span className="cc-word">clases</span>
+            </span>
           </h1>
 
           <p className="cc-hero-sub">
@@ -303,14 +309,14 @@ const CourseCatalog = () => {
               onClick={handleGlobalSearchMode}
             >
               <FiSearch size={15} />
-              Buscar un curso específico...
+              Buscar una clase específica...
             </button>
 
             <button 
               className="cc-all-trigger"
               onClick={() => handleCategorySelect('all')}
             >
-              Ver todos los cursos
+              Ver todas las clases
             </button>
           </div>
         </div>
@@ -330,7 +336,7 @@ const CourseCatalog = () => {
                 autoFocus
                 type="text"
                 className="cc-search-bar__input"
-                placeholder="Buscar cursos..."
+                placeholder="Buscar clases..."
                 value={globalSearch}
                 onChange={e => setGlobalSearch(e.target.value)}
               />
@@ -358,7 +364,7 @@ const CourseCatalog = () => {
                     <p className="cc-search-results__count">
                       {globalResults.length} resultado{globalResults.length !== 1 ? 's' : ''}
                     </p>
-                    <CourseList courses={globalResults} loading={false} viewMode="grid" />
+                    <ClaseList clases={globalResults} loading={false} viewMode="grid" />
                   </>
                 )}
               </div>
@@ -366,7 +372,7 @@ const CourseCatalog = () => {
 
             {!globalSearch && (
               <p className="cc-search-results__hint">
-                Escribí para buscar en todos los cursos
+                Escribí para buscar en todas las clases
               </p>
             )}
           </div>
@@ -428,7 +434,7 @@ const CourseCatalog = () => {
                     className="cc-btn-outline"
                     onClick={() => handleCategorySelect('all')}
                   >
-                    Ver todos los cursos <FiArrowRight size={16} />
+                    Ver todas las clases <FiArrowRight size={16} />
                   </button>
                 </div>
               </>
@@ -523,24 +529,24 @@ const CourseCatalog = () => {
                   </div>
 
                   {/* Contador */}
-                  <CourseCount loading={loading} count={courses.length} />
+                  <ClaseCount loading={loading} count={clases.length} />
                 </div>
 
-                {/* ── Cursos ── */}
-                <div className="cc-courses-wrap">
-                  {!loading && courses.length === 0 ? (
+                {/* ── Clases ── */}
+                <div className="cc-clases-wrap">
+                  {!loading && clases.length === 0 ? (
                     <EmptyState
                       msg={
                         level || search || onlyFeatured
                           ? 'Probá ajustando los filtros'
-                          : 'Esta categoría no tiene cursos todavía'
+                          : 'Esta categoría no tiene clases todavía'
                       }
                       onReset={() => {
                         setLevel(''); setSearch(''); setOnlyFeatured(false); setSort('');
                       }}
                     />
                   ) : (
-                    <CourseList courses={courses} loading={loading} viewMode="grid" />
+                    <ClaseList clases={clases} loading={loading} viewMode="grid" />
                   )}
                 </div>
 
@@ -571,4 +577,4 @@ const CourseCatalog = () => {
   );
 };
 
-export default CourseCatalog;
+export default ClaseCatalog;

@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from apps.users.models import User
-from apps.courses.models import Course
+from apps.clases.models import Clase
 
 
 class Transaction(models.Model):
@@ -14,7 +14,7 @@ class Transaction(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='transactions')
+    clase = models.ForeignKey(Clase, on_delete=models.CASCADE, related_name='transactions')
 
     # Mercado Pago data
     # Al crear la transacción en create_payment solo tenemos preference_id;
@@ -59,16 +59,16 @@ class Transaction(models.Model):
         self.approved_at = timezone.now()
 
         # Crear o activar acceso al curso
-        CourseAccess.objects.update_or_create(
+        ClaseAccess.objects.update_or_create(
             user=self.user,
-            course=self.course,
+            clase=self.clase,
             defaults={'is_active': True, 'purchased_at': timezone.now()}
         )
 
 
-class CourseAccess(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='course_accesses')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='user_accesses')
+class ClaseAccess(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clase_accesses')
+    clase = models.ForeignKey(Clase, on_delete=models.CASCADE, related_name='user_accesses')
     transaction = models.ForeignKey(Transaction, on_delete=models.SET_NULL, null=True, blank=True)
 
     is_active = models.BooleanField('Activo', default=True)
@@ -79,14 +79,14 @@ class CourseAccess(models.Model):
     updated_at = models.DateTimeField('Última actualización', auto_now=True)
 
     class Meta:
-        db_table = 'course_accesses'
-        verbose_name = 'Acceso a curso'
-        verbose_name_plural = 'Accesos a cursos'
-        unique_together = ['user', 'course']
+        db_table = 'clase_accesses'
+        verbose_name = 'Acceso a clase'
+        verbose_name_plural = 'Accesos a clases'
+        unique_together = ['user', 'clase']
         ordering = ['-purchased_at']
 
     def __str__(self):
-        return f"{self.user.email} - {self.course.title}"
+        return f"{self.user.email} - {self.clase.title}"
 
     @property
     def is_expired(self):

@@ -29,7 +29,7 @@ INSTALLED_APPS = [
 
     # Local
     'apps.users',
-    'apps.courses',
+    'apps.clases',
     'apps.payments',
     'apps.videos',
 ]

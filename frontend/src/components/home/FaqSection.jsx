@@ -2,24 +2,24 @@ import { useState } from 'react';
 
 const faqs = [
   {
-    q: '¿Cómo puedo acceder a los cursos?',
-    a: 'Solo necesitas crear tu cuenta y comprar el curso que quieras realizar. Una vez adquirido, tendrás acceso inmediato a todas las clases incluidas en ese curso para realizarlas a tu propio ritmo desde tu navegador o dispositivo.',
+    q: '¿Cómo puedo acceder a las clases?',
+    a: 'Solo necesitas crear tu cuenta y comprar la clase que quieras realizar. Una vez adquirida, tendrás acceso inmediato a todas las clases incluidas en esa clase para realizarlas a tu propio ritmo desde tu navegador o dispositivo.',
   },
   {
     q: 'Soy nueva en Pilates, ¿por dónde empiezo?',
-    a: 'Si es tu primera vez, te recomendamos comenzar con un curso para principiantes. Estos programas están diseñados para enseñarte los fundamentos del Pilates paso a paso: respiración, alineación y activación del core.',
+    a: 'Si es tu primera vez, te recomendamos comenzar con una clase para principiantes. Estos programas están diseñados para enseñarte los fundamentos del Pilates paso a paso: respiración, alineación y activación del core.',
   },
   {
     q: '¿Cómo funcionan los pagos?',
-    a: 'Nuestros cursos se compran de forma individual. Cada curso tiene su propio precio y, una vez que lo adquieres, puedes acceder a todas sus clases sin necesidad de pagar una suscripción mensual.',
+    a: 'Nuestras clases se compran de forma individual. Cada clase tiene su propio precio y, una vez que la adquieres, puedes acceder a todas sus clases sin necesidad de pagar una suscripción mensual.',
   },
   {
     q: '¿Hay clases de Pilates prenatal?',
-    a: 'Sí. Disponemos de cursos diseñados especialmente para acompañarte durante el embarazo, con ejercicios suaves y seguros enfocados en movilidad, respiración y bienestar.',
+    a: 'Sí. Disponemos de clases diseñadas especialmente para acompañarte durante el embarazo, con ejercicios suaves y seguros enfocados en movilidad, respiración y bienestar.',
   },
   {
     q: '¿Necesito equipamiento para practicar?',
-    a: 'La mayoría de las clases se pueden realizar solo con una colchoneta. Algunos cursos pueden incluir accesorios opcionales como bandas elásticas, pelota o aro de Pilates, pero no son obligatorios para empezar.',
+    a: 'La mayoría de las clases se pueden realizar solo con una colchoneta. Algunas clases pueden incluir accesorios opcionales como bandas elásticas, pelota o aro de Pilates, pero no son obligatorios para empezar.',
   },
   {
     q: '¿Cuántas veces por semana debería practicar?',

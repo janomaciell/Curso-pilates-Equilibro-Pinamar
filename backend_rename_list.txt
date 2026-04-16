@@ -1,0 +1,37 @@
+backend/apps/payments/migrations/0002_initial.py:        ('courses', '0002_initial'),
+backend/apps/payments/migrations/0002_initial.py:            model_name='courseaccess',
+backend/apps/payments/migrations/0002_initial.py:            name='course',
+backend/apps/payments/migrations/0002_initial.py:            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_accesses', to='courses.course'),
+backend/apps/payments/migrations/0002_initial.py:            model_name='courseaccess',
+backend/apps/payments/migrations/0002_initial.py:            model_name='courseaccess',
+backend/apps/payments/migrations/0002_initial.py:            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='course_accesses', to=settings.AUTH_USER_MODEL),
+backend/apps/payments/migrations/0002_initial.py:            name='courseaccess',
+backend/apps/payments/migrations/0002_initial.py:            unique_together={('user', 'course')},
+backend/apps/payments/migrations/0001_initial.py:        ('courses', '0001_initial'),
+backend/apps/payments/migrations/0001_initial.py:            name='CourseAccess',
+backend/apps/payments/migrations/0001_initial.py:                'db_table': 'course_accesses',
+backend/apps/payments/migrations/0001_initial.py:                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to='courses.course')),
+backend/apps/payments/admin.py:@admin.register(CourseAccess)
+backend/apps/payments/admin.py:class CourseAccessAdmin(admin.ModelAdmin):
+backend/apps/payments/admin.py:    list_display = ('user', 'course', 'is_active', 'purchased_at', 'expires_at')
+backend/apps/payments/admin.py:    search_fields = ('user__email', 'course__title')
+backend/apps/payments/webhooks.py:        # Resolver user / course a partir de metadata y external_reference
+backend/apps/payments/views.py:                    # Evitar UNIQUE: si otro intento (misma preferencia/user/course) ya tiene este payment_id,
+backend/apps/videos/migrations/0001_initial.py:        ('courses', '0001_initial'),
+backend/apps/videos/migrations/0001_initial.py:                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='video_tokens', to='courses.lesson')),
+backend/apps/clases/migrations/0002_initial.py:        ('courses', '0001_initial'),
+backend/apps/clases/migrations/0002_initial.py:            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to='courses.lesson'),
+backend/apps/clases/migrations/0002_initial.py:            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lessons', to='courses.module'),
+backend/apps/clases/migrations/0002_initial.py:            model_name='course',
+backend/apps/clases/migrations/0002_initial.py:            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='courses_created', to=settings.AUTH_USER_MODEL),
+backend/apps/clases/migrations/0002_initial.py:            unique_together={('course', 'order')},
+backend/apps/clases/migrations/0001_initial.py:            name='Course',
+backend/apps/clases/migrations/0001_initial.py:                ('cover_image', models.ImageField(upload_to='courses/covers/', verbose_name='Imagen de portada')),
+backend/apps/clases/migrations/0001_initial.py:                'db_table': 'courses',
+backend/apps/clases/migrations/0001_initial.py:                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='modules', to='courses.course')),
+backend/apps/clases/migrations/0001_initial.py:                'ordering': ['course', 'order'],
+backend/apps/clases/migrations/0001_initial.py:                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_progress', to='courses.lesson')),
+backend/apps/clases/serializers.py:# ── Module / Course serializers ────────────────────────────────────────────────
+backend/apps/clases/urls.py:    # Documentos anidados: GET/POST  /api/courses/lessons/<lesson_pk>/documents/
+backend/apps/clases/urls.py:    # Documento individual: GET / DELETE  /api/courses/documents/<pk>/
+backend/apps/clases/urls.py:    # Progreso: /api/courses/progress/
