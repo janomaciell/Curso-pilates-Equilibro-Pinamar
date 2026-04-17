@@ -542,11 +542,12 @@
 /* Footer */
 .clase-footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   padding-top: 1.5rem;
   border-top: 2px solid var(--gray-100);
-  gap: 1rem;
+  gap: 0.6rem;
 }
 
 .purchase-date {
@@ -562,6 +563,28 @@
   width: 16px;
   height: 16px;
 }
+
+/* Indicador de expiración — sutil */
+.access-expiry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #9a8e85;
+  font-weight: 500;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  background: rgba(185,137,103,0.07);
+  border: 1px solid rgba(185,137,103,0.15);
+}
+
+/* Solo cuando quedan ≤ 7 días: ámbar pero discreto */
+.access-expiry--warning {
+  background: rgba(217, 136, 16, 0.08);
+  border-color: rgba(217, 136, 16, 0.25);
+  color: #b87c15;
+}
+
 
 .continue-btn {
   display: inline-flex;

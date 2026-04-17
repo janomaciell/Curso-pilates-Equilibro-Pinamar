@@ -2,9 +2,10 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FiClock, FiUsers, FiBook, FiPlay, FiCheckCircle,
-  FiLock, FiAward, FiShield, FiArrowRight,
+  FiLock, FiAward, FiShield, FiArrowRight, FiShoppingBag,
 } from 'react-icons/fi';
 import NgrokImage from '../components/common/NgrokImage';
+import { useCart } from '../context/CartContext';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './ClaseDetail.css';
@@ -38,6 +39,13 @@ const formatPrice = (p) =>
 
 const ClaseDetail = ({ clase, hasAccess, onPurchase, loading, progress = {} }) => {
   const navigate = useNavigate();
+  const { isInCart, addToCart, openCart } = useCart();
+  const inCart = isInCart(clase.id);
+
+  const handleAddToCart = () => {
+    addToCart(clase);
+    openCart();
+  };
 
   useEffect(() => {
     const mm = gsap.matchMedia();
@@ -151,10 +159,15 @@ const ClaseDetail = ({ clase, hasAccess, onPurchase, loading, progress = {} }) =
               ) : (
                 <>
                   <div className="cd-price-block">
-                    <span className="cd-price-label">Inversión única</span>
+                    <span className="cd-price-label">Precio</span>
                     <span className="cd-price">{formatPrice(clase.price)}</span>
+                    {/* Nota sutil — no intrusiva */}
+                    <span className="cd-price-duration">
+                      <FiClock size={11} /> 30 días de acceso
+                    </span>
                   </div>
 
+                  {/* Botón principal */}
                   <button className="cd-btn-buy" onClick={onPurchase} disabled={loading}>
                     {loading
                       ? <><span className="cd-spinner" /> Procesando...</>
@@ -162,11 +175,21 @@ const ClaseDetail = ({ clase, hasAccess, onPurchase, loading, progress = {} }) =
                     }
                   </button>
 
+                  {/* Agregar al carrito */}
+                  <button
+                    className={`cd-btn-cart ${inCart ? 'cd-btn-cart--in' : ''}`}
+                    onClick={handleAddToCart}
+                    disabled={inCart}
+                  >
+                    <FiShoppingBag size={14} />
+                    {inCart ? 'En el carrito ✓' : 'Agregar al carrito'}
+                  </button>
+
                   <ul className="cd-benefits">
                     {[
-                      [FiCheckCircle, 'Acceso de por vida'],
+                      [FiCheckCircle, 'Acceso por 30 días'],
                       [FiCheckCircle, 'Certificado al finalizar'],
-                      [FiShield,      'Garantía 30 días'],
+                      [FiShield,      'Pago seguro'],
                       [FiCheckCircle, 'Actualizaciones gratuitas'],
                     ].map(([Icon, text]) => (
                       <li key={text}><Icon size={13} /> {text}</li>

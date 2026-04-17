@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.conf import settings
-from .models import Transaction, ClaseAccess
+from django.utils import timezone
+from .models import Transaction, ClaseAccess, TransactionClase
 from .serializers import (
     TransactionSerializer,
     ClaseAccessSerializer,
@@ -21,7 +22,7 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet para transacciones"""
     serializer_class = TransactionSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         return Transaction.objects.filter(user=self.request.user).order_by('-created_at')
 
@@ -30,8 +31,7 @@ class ClaseAccessViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet para accesos a clases (Mis Clases)"""
     serializer_class = ClaseAccessSerializer
     permission_classes = [IsAuthenticated]
-    
-    
+
     def get_queryset(self):
         return ClaseAccess.objects.filter(
             user=self.request.user,
@@ -42,102 +42,152 @@ class ClaseAccessViewSet(viewsets.ReadOnlyModelViewSet):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_clases(request):
-    """Lista de clases compradas por el usuario (Mis Clases)."""
+    """Lista de clases compradas por el usuario (Mis Clases).
+    
+    Solo retorna accesos activos y NO expirados.
+    """
+    now = timezone.now()
     accesses = ClaseAccess.objects.filter(
         user=request.user,
-        is_active=True
+        is_active=True,
     ).select_related('clase').order_by('-purchased_at')
-    serializer = ClaseAccessSerializer(accesses, many=True)
+
+    # Desactivar accesos expirados silenciosamente
+    expired_ids = []
+    valid_accesses = []
+    for access in accesses:
+        if access.expires_at and now > access.expires_at:
+            expired_ids.append(access.id)
+        else:
+            valid_accesses.append(access)
+
+    if expired_ids:
+        ClaseAccess.objects.filter(id__in=expired_ids).update(is_active=False)
+        logger.info(f"[ClaseAccess] Desactivados {len(expired_ids)} accesos expirados para user {request.user.id}")
+
+    serializer = ClaseAccessSerializer(valid_accesses, many=True)
     return Response(serializer.data)
 
 
 def get_frontend_url():
-    """Obtener la URL base del frontend.
-    
-    Lee FRONTEND_URL desde settings (viene de .env).
-    En desarrollo: http://localhost:5173
-    En producción: tu dominio real
-    """
+    """Obtener la URL base del frontend."""
     url = getattr(settings, 'FRONTEND_URL', None)
     if url and url.strip():
         return url.strip().rstrip('/')
-    # Fallback para desarrollo
     return 'http://localhost:5173'
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_payment(request):
-    """Crear preferencia de pago en Mercado Pago"""
+    """Crear preferencia de pago en Mercado Pago (carrito multi-clase).
+    
+    Espera: { "clase_ids": [1, 2, 3] }
+    """
+    print("create_payment payload:", request.data)
     serializer = CreatePaymentSerializer(data=request.data)
-    
+
     if not serializer.is_valid():
+        print("Serializer errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    clase_id = serializer.validated_data['clase_id']
-    clase = get_object_or_404(Clase, id=clase_id, is_active=True)
+
+    clase_ids = serializer.validated_data['clase_ids']
     user = request.user
-    
-    # Verificar si ya tiene acceso
-    if ClaseAccess.objects.filter(user=user, clase=clase, is_active=True).exists():
+
+    # Obtener las clases activas
+    clases = list(Clase.objects.filter(id__in=clase_ids, is_active=True))
+    found_ids = {c.id for c in clases}
+    missing = set(clase_ids) - found_ids
+    if missing:
         return Response(
-            {'error': 'Ya tienes acceso a esta clase'},
+            {'error': f'Clases no encontradas o inactivas: {list(missing)}'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
+    # Verificar si ya tiene acceso a alguna (activa y no expirada)
+    now = timezone.now()
+    already_owned = ClaseAccess.objects.filter(
+        user=user,
+        clase__in=clases,
+        is_active=True,
+    ).filter(
+        # Sin expiración O aún vigente
+        expires_at__isnull=True
+    ) | ClaseAccess.objects.filter(
+        user=user,
+        clase__in=clases,
+        is_active=True,
+        expires_at__gt=now,
+    )
+    already_owned = already_owned.select_related('clase')
+
+    if already_owned.exists():
+        titles = ', '.join(a.clase.title for a in already_owned)
+        return Response(
+            {'error': f'Ya tenés acceso vigente a: {titles}'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     try:
         mp_service = MercadoPagoService()
-        
-        # URL del frontend donde redirigir después del pago
-        frontend_url = get_frontend_url()
-        return_url = f"{frontend_url}/clases/{clase.slug}"
 
-        # URL del webhook: tiene que ser pública (ngrok/dominio). MP no puede llamar a localhost.
+        frontend_url = get_frontend_url()
+        return_url = f"{frontend_url}/payment-success"
+
         backend_url = (getattr(settings, 'BACKEND_URL', None) or '').strip()
         if backend_url:
             notification_url = f"{backend_url.rstrip('/')}/api/payments/webhook/"
         else:
             notification_url = request.build_absolute_uri('/api/payments/webhook/')
 
-        # Debug: mostrar exactamente qué URLs se envían a MP
-        logger.info(f"[MP] Creating payment for clase: {clase.title}")
-        logger.info(f"[MP] frontend_url: {frontend_url}")
-        logger.info(f"[MP] return_url: {return_url}")
-        logger.info(f"[MP] notification_url: {notification_url}")
-        
-        preference = mp_service.create_preference(
-            clase=clase,
-            user=user,
-            return_url=return_url,
-            notification_url=notification_url
-        )
-        
-        # Crear transacción pendiente
+        # Crear transacción primero para obtener el UUID
+        total_amount = sum(c.price for c in clases)
         transaction = Transaction.objects.create(
             user=user,
-            clase=clase,
-            mp_preference_id=preference['preference_id'],
-            amount=clase.price,
+            clase=clases[0] if len(clases) == 1 else None,  # legacy compat
+            amount=total_amount,
             status='pending',
             ip_address=get_client_ip(request)
         )
-        
-        # Respuesta que debe devolver POST /payments/create/
+
+        # Vincular clases al carrito
+        for c in clases:
+            TransactionClase.objects.create(
+                transaction=transaction,
+                clase=c,
+                unit_price=c.price
+            )
+
+        logger.info(f"[MP] Creating cart payment for user {user.id}, clases={clase_ids}, cart={transaction.cart_reference}")
+
+        preference = mp_service.create_preference(
+            clases=clases,
+            user=user,
+            return_url=return_url,
+            notification_url=notification_url,
+            cart_reference=transaction.cart_reference,
+        )
+
+        # Guardar el preference_id
+        transaction.mp_preference_id = preference['preference_id']
+        transaction.save(update_fields=['mp_preference_id'])
+
         init_point = preference.get('init_point', '')
         sandbox_init_point = (preference.get('sandbox_init_point') or '').strip() or init_point
         use_sandbox = getattr(settings, 'MERCADOPAGO_SANDBOX', True)
-        # En modo sandbox devolvemos la URL de pruebas como init_point para que el front use siempre esa
         checkout_url = sandbox_init_point if use_sandbox else init_point
+
         logger.info(f"[MP] Transaction created: {transaction.id} - preference: {preference['preference_id']} (sandbox={use_sandbox})")
-        
+
         return Response({
             'preference_id': preference['preference_id'],
             'init_point': checkout_url,
             'sandbox_init_point': sandbox_init_point,
             'sandbox': use_sandbox,
-            'transaction_id': transaction.id
+            'transaction_id': transaction.id,
+            'cart_reference': str(transaction.cart_reference),
         }, status=status.HTTP_201_CREATED)
-    
+
     except Exception as e:
         logger.error(f"create_payment: error al crear pago: {str(e)}", exc_info=True)
         return Response(
@@ -177,90 +227,85 @@ def check_preference_status(request, preference_id):
             mp_preference_id=preference_id,
             user=request.user
         )
-        
+
         logger.info(f"[Polling] Checking preference: {preference_id}")
-        
+
         mp_service = MercadoPagoService()
-        
+
         try:
-            # Si ya tenemos payment_id, consultar directamente el estado
             if transaction.mp_payment_id:
                 logger.info(f"[Polling] Consulting payment_id: {transaction.mp_payment_id}")
                 payment_info = mp_service.get_payment_info(transaction.mp_payment_id)
-                
+
                 mp_status = payment_info.get('status')
                 new_status = map_mp_status(mp_status)
-                
+
                 logger.info(f"[Polling] Payment status: MP={mp_status}, internal={new_status}")
-                
-                # Actualizar transacción
+
                 old_status = transaction.status
                 transaction.status = new_status
                 transaction.payment_method = payment_info.get('payment_method_id', '')
                 transaction.payment_type = payment_info.get('payment_type_id', '')
-                
-                # Si cambió a approved, dar acceso
+
                 if new_status == 'approved' and old_status != 'approved':
                     transaction.approve()
                     logger.info(f"[Polling] ✓ Payment {transaction.mp_payment_id} APPROVED!")
-                
+
                 transaction.save()
-                
+
             else:
-                # No tenemos payment_id: buscar por external_reference.
-                # La API de MP no admite búsqueda por preference_id (devuelve 400).
-                external_reference = f"user_{transaction.user.id}_clase_{transaction.clase.id}"
+                # Buscar por external_reference (cart_reference)
+                cart_ref = str(transaction.cart_reference)
+                external_reference = f"user_{transaction.user.id}_cart_{cart_ref}"
                 logger.info(f"[Polling] Searching for payment: external_reference={external_reference}")
-                
+
                 payment_data = mp_service.search_payments_by_external_reference(external_reference)
-                
-                # Solo usar el pago si no pertenece a otra transacción (otra preferencia).
+
+                # Fallback: buscar por el formato legacy clase
+                if not payment_data and transaction.clase:
+                    ext_ref_legacy = f"user_{transaction.user.id}_clase_{transaction.clase.id}"
+                    logger.info(f"[Polling] Fallback legacy search: {ext_ref_legacy}")
+                    payment_data = mp_service.search_payments_by_external_reference(ext_ref_legacy)
+
                 if payment_data:
                     pid = str(payment_data.get("id", ""))
                     other = Transaction.objects.filter(mp_payment_id=pid).first()
                     if other and other.mp_preference_id != preference_id:
                         logger.info(f"[Polling] Payment already linked to other preference, ignoring")
                         payment_data = None
-                
+
                 if payment_data:
-                    # ¡Encontramos el pago de esta sesión!
-                    payment_id = str(payment_data.get("id", ""))
+                    payment_id_val = str(payment_data.get("id", ""))
                     mp_status = payment_data.get("status")
-                    
-                    logger.info(f"[Polling] ✓ Payment FOUND: {payment_id}, status: {mp_status}")
-                    
-                    # Evitar UNIQUE: si otro intento (misma preferencia/user/clase) ya tiene este payment_id,
-                    # no asignarlo aquí; usar la transacción que ya lo tiene para responder.
-                    other = Transaction.objects.filter(mp_payment_id=payment_id).exclude(pk=transaction.pk).first()
+
+                    logger.info(f"[Polling] ✓ Payment FOUND: {payment_id_val}, status: {mp_status}")
+
+                    other = Transaction.objects.filter(mp_payment_id=payment_id_val).exclude(pk=transaction.pk).first()
                     if other:
-                        logger.info(f"[Polling] Payment {payment_id} already linked to transaction {other.pk}, returning that one")
+                        logger.info(f"[Polling] Payment {payment_id_val} already linked to transaction {other.pk}, returning that one")
                         transaction = other
                         serializer = TransactionSerializer(transaction)
                         return Response(serializer.data)
-                    
-                    # Actualizar transacción
-                    transaction.mp_payment_id = payment_id
+
+                    transaction.mp_payment_id = payment_id_val
                     transaction.status = map_mp_status(mp_status)
                     transaction.payment_method = payment_data.get("payment_method_id", "")
                     transaction.payment_type = payment_data.get("payment_type_id", "")
-                    
-                    # Si está aprobado, dar acceso
+
                     if transaction.status == "approved":
                         transaction.approve()
-                        logger.info(f"[Polling] ✓ Payment {payment_id} APPROVED via polling!")
-                    
+                        logger.info(f"[Polling] ✓ Payment {payment_id_val} APPROVED via polling!")
+
                     transaction.save()
                 else:
                     logger.info(f"[Polling] No payment found yet (user probably still filling form)")
-        
+
         except Exception as e:
             logger.error(f"[Polling] Error querying MP: {str(e)}", exc_info=True)
-            # No fallar, devolver el estado actual
-        
-        # Devolver la transacción actualizada
+
         serializer = TransactionSerializer(transaction)
         return Response(serializer.data)
-        
+
     except Transaction.DoesNotExist:
         logger.warning(f"[Polling] Transaction not found: {preference_id}")
         return Response(

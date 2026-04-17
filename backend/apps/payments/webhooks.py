@@ -5,7 +5,8 @@ from django.utils import timezone
 import json
 import logging
 import re
-from .models import Transaction, ClaseAccess
+import uuid
+from .models import Transaction, ClaseAccess, TransactionClase
 from .mercadopago import MercadoPagoService
 from apps.users.models import User
 from apps.clases.models import Clase
@@ -18,7 +19,6 @@ logger = logging.getLogger(__name__)
 def mercadopago_webhook(request):
     """Webhook para notificaciones de Mercado Pago"""
     try:
-        # Verificar firma del webhook
         mp_service = MercadoPagoService()
         if not mp_service.verify_webhook_signature(request):
             logger.warning("Webhook con firma inválida rechazado")
@@ -27,7 +27,6 @@ def mercadopago_webhook(request):
         data = json.loads(request.body)
         logger.info(f"Webhook recibido: {data}")
 
-        # Solo procesar notificaciones de tipo "payment"
         if data.get("type") != "payment":
             return JsonResponse({"status": "ignored"}, status=200)
 
@@ -35,96 +34,129 @@ def mercadopago_webhook(request):
         if not payment_id:
             return JsonResponse({"status": "error", "message": "No payment_id"}, status=400)
 
-        # Obtener información completa del pago desde la API de MP
         payment_info = mp_service.get_payment_info(payment_id)
 
         # ------------------------------------------------------------------
-        # Resolver user / clase a partir de metadata y external_reference
+        # Resolver la transacción a partir de metadata / external_reference
         # ------------------------------------------------------------------
         external_reference = payment_info.get("external_reference", "") or ""
         metadata = payment_info.get("metadata", {}) or {}
 
         meta_user_id = metadata.get("user_id")
-        meta_clase_id = metadata.get("clase_id")
+        meta_cart_ref = metadata.get("cart_reference")   # nuevo formato
+        meta_clase_id = metadata.get("clase_id")         # legacy
 
+        # Parsear external_reference — dos formatos posibles:
+        # Nuevo:   "user_{user_id}_cart_{cart_uuid}"
+        # Legacy:  "user_{user_id}_clase_{clase_id}"
         ref_user_id = None
+        ref_cart_ref = None
         ref_clase_id = None
+
         if external_reference:
-            # external_reference esperado: "user_{user_id}_clase_{clase_id}"
-            match = re.match(r"user_(\d+)_clase_(\d+)", str(external_reference).strip())
-            if match:
-                ref_user_id, ref_clase_id = int(match.group(1)), int(match.group(2))
+            ext = str(external_reference).strip()
+            # Nuevo formato
+            m_cart = re.match(r"user_(\d+)_cart_([0-9a-f-]+)", ext)
+            # Legacy
+            m_clase = re.match(r"user_(\d+)_clase_(\d+)", ext)
+
+            if m_cart:
+                ref_user_id = int(m_cart.group(1))
+                ref_cart_ref = m_cart.group(2)
+            elif m_clase:
+                ref_user_id = int(m_clase.group(1))
+                ref_clase_id = int(m_clase.group(2))
 
         user_id = meta_user_id or ref_user_id
-        clase_id = meta_clase_id or ref_clase_id
+        cart_reference = meta_cart_ref or ref_cart_ref
+        clase_id = meta_clase_id or ref_clase_id   # solo para legacy
 
-        if not user_id or not clase_id:
+        if not user_id:
             logger.error(
-                f"Webhook pago {payment_id}: no se pudo resolver user_id/clase_id "
+                f"Webhook pago {payment_id}: no se pudo resolver user_id "
                 f"(metadata={metadata}, external_reference={external_reference})"
             )
             return JsonResponse(
-                {"status": "error", "message": "No se pudo resolver usuario/curso del pago"},
+                {"status": "error", "message": "No se pudo resolver usuario del pago"},
                 status=400,
             )
 
         try:
             user = User.objects.get(id=user_id)
-            clase = Clase.objects.get(id=clase_id)
-        except (User.DoesNotExist, Clase.DoesNotExist) as e:
-            logger.error(f"Webhook pago {payment_id}: usuario o clase no encontrado - {e}")
+        except User.DoesNotExist as e:
+            logger.error(f"Webhook pago {payment_id}: usuario no encontrado - {e}")
             return JsonResponse(
-                {"status": "error", "message": "Usuario o clase no encontrado"},
+                {"status": "error", "message": "Usuario no encontrado"},
                 status=400,
             )
 
         # ------------------------------------------------------------------
-        # Buscar/crear la transacción correcta (idempotente: MP puede enviar el webhook 2+ veces)
+        # Buscar/crear la transacción (idempotente)
         # ------------------------------------------------------------------
         pref_id = payment_info.get("preference_id") or ""
         transaction = None
 
-        # 0) Si ya existe una transacción con este payment_id, usarla (evita UNIQUE constraint)
+        # 0) Si ya existe una transacción con este payment_id
         transaction = Transaction.objects.filter(mp_payment_id=str(payment_id)).first()
 
-        # 1) Si no, intentar por preference_id + usuario + clase (flujo normal)
+        # 1) Buscar por cart_reference (nuevo formato)
+        if not transaction and cart_reference:
+            try:
+                cart_uuid = uuid.UUID(cart_reference)
+                transaction = Transaction.objects.filter(
+                    cart_reference=cart_uuid,
+                    user=user,
+                ).order_by("-created_at").first()
+            except (ValueError, AttributeError):
+                pass
+
+        # 2) Buscar por preference_id (compatibilidad)
         if not transaction and pref_id:
             transaction = (
                 Transaction.objects.filter(
                     mp_preference_id=pref_id,
                     user=user,
-                    clase=clase,
                 )
                 .order_by("-created_at")
                 .first()
             )
 
-        # 2) Si no está, tomar la última transacción pendiente de ese user/clase
-        if not transaction:
-            transaction = (
-                Transaction.objects.filter(
-                    user=user,
-                    clase=clase,
-                    status="pending",
+        # 3) Buscar por clase_id legacy
+        if not transaction and clase_id:
+            try:
+                clase_obj = Clase.objects.get(id=clase_id)
+                transaction = (
+                    Transaction.objects.filter(
+                        user=user,
+                        clase=clase_obj,
+                        status="pending",
+                    )
+                    .order_by("-created_at")
+                    .first()
                 )
-                .order_by("-created_at")
-                .first()
-            )
+            except Clase.DoesNotExist:
+                pass
 
-        # 3) Si sigue sin encontrarse, crear una nueva usando los datos del pago
+        # 4) Crear transacción nueva si no se encontró (no debería pasar)
         if not transaction:
+            logger.warning(f"Webhook pago {payment_id}: no se encontró transacción, creando nueva")
             transaction = Transaction(
                 user=user,
-                clase=clase,
                 mp_preference_id=pref_id,
                 amount=payment_info.get("transaction_amount", 0),
                 status="pending",
             )
+            # Agregar clase legacy si aplica
+            if clase_id:
+                try:
+                    transaction.clase = Clase.objects.get(id=clase_id)
+                except Clase.DoesNotExist:
+                    pass
 
-        # En todos los casos, asociar el payment_id actual
+        # Asociar payment_id
         transaction.mp_payment_id = str(payment_id)
 
-        # Actualizar campos del pago
+        # Actualizar campos
         mp_status = payment_info.get("status")
         transaction.status = map_mp_status(mp_status)
         transaction.payment_method = payment_info.get("payment_method_id", "")
@@ -132,11 +164,10 @@ def mercadopago_webhook(request):
         transaction.mp_merchant_order_id = str(payment_info.get("order", {}).get("id", ""))
         transaction.raw_data = payment_info
 
-        # Si está aprobado, dar acceso a la clase
-        # FIX: approve() ya no hace save(), así que el único save() es este de abajo
+        # Si está aprobado, dar acceso (30 días) a todas las clases del carrito
         if transaction.status == 'approved':
             transaction.approve()
-            logger.info(f"Pago {payment_id} aprobado - Acceso otorgado")
+            logger.info(f"Pago {payment_id} aprobado - Acceso otorgado (30 días)")
 
         transaction.save()
 

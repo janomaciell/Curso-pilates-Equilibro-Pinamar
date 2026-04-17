@@ -33,7 +33,7 @@ class ClaseViewSet(viewsets.ReadOnlyModelViewSet):
         return ClaseListSerializer
     
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'featured']:
+        if self.action in ['list', 'retrieve', 'featured', 'category_stats']:
             return [AllowAny()]
         return [IsAuthenticated()]
     
@@ -58,7 +58,7 @@ class ClaseViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(featured_clases, many=True)
         return Response(serializer.data)
     
-    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny], url_path='category-stats')
     def category_stats(self, request):
         """
         Devuelve conteos reales de clases por categoría y dificultad.

@@ -15,7 +15,8 @@ import {
   FiList,
   FiTrendingUp,
   FiAward,
-  FiTarget
+  FiTarget,
+  FiAlertCircle
 } from 'react-icons/fi';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -122,9 +123,15 @@ const MyClases = () => {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('es-AR', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     });
+  };
+
+  const getDaysRemaining = (access) => {
+    if (!access.expires_at) return null;
+    const diff = new Date(access.expires_at) - new Date();
+    return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
   };
 
   const calculateStats = () => {
@@ -395,8 +402,23 @@ const MyClases = () => {
                     <div className="clase-footer">
                       <span className="purchase-date">
                         <FiClock />
-                        {formatDate(access.purchased_at)}
+                        Comprado {formatDate(access.purchased_at)}
                       </span>
+
+                      {/* Expiración sutil */}
+                      {access.expires_at && (() => {
+                        const days = getDaysRemaining(access);
+                        const expiring = days !== null && days <= 7;
+                        return (
+                          <span className={`access-expiry ${expiring ? 'access-expiry--warning' : ''}`}>
+                            {expiring
+                              ? <><FiAlertCircle size={11} /> {days === 0 ? 'Vence hoy' : `Vence en ${days}d`}</>
+                              : <><FiClock size={11} /> Acceso hasta {formatDate(access.expires_at)}</>
+                            }
+                          </span>
+                        );
+                      })()}
+
                       <button
                         type="button"
                         className="continue-btn"

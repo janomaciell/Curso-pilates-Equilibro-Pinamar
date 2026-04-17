@@ -1,15 +1,26 @@
 import { Link } from 'react-router-dom';
-import { FiClock, FiUsers, FiBook } from 'react-icons/fi';
+import { FiClock, FiUsers, FiBook, FiShoppingBag } from 'react-icons/fi';
+import { useCart } from '../context/CartContext';
 import Card from '../components/common/Card';
 import NgrokImage from '../components/common/NgrokImage';
 import './ClaseCard.css';
 
 const ClaseCard = ({ clase }) => {
+  const { isInCart, addToCart, openCart } = useCart();
+  const inCart = isInCart(clase.id);
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS'
     }).format(price);
+  };
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(clase);
+    openCart();
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -70,6 +81,13 @@ const ClaseCard = ({ clase }) => {
 
           <div className="clase-footer">
             <span className="clase-price">{formatPrice(clase.price)}</span>
+            <button 
+              className={`clase-card-cart ${inCart ? 'in-cart' : ''}`}
+              onClick={handleAddToCart}
+              title={inCart ? 'En el carrito' : 'Agregar al carrito'}
+            >
+              <FiShoppingBag />
+            </button>
           </div>
         </div>
       </Link>

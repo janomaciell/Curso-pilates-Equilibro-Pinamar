@@ -203,6 +203,18 @@
   line-height: 1;
 }
 
+/* Nota sutil de duración — pequeña, discreta */
+.cd-price-duration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  margin-top: .5rem;
+  font-size: .72rem;
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+
 /* Botón comprar */
 .cd-btn-buy {
   width: 100%;
@@ -250,6 +262,38 @@
   flex-shrink: 0;
 }
 @keyframes cd-spin { to { transform: rotate(360deg); } }
+
+/* Botón agregar al carrito */
+.cd-btn-cart {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .75rem 1.5rem;
+  background: transparent;
+  color: var(--sage-dark);
+  border: 1.5px solid var(--sage);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: .85rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: background .22s, color .22s, border-color .22s, transform .22s;
+}
+.cd-btn-cart:hover:not(:disabled) {
+  background: rgba(185,137,103,.1);
+  border-color: var(--sage-dark);
+  transform: translateY(-1px);
+}
+.cd-btn-cart--in {
+  background: rgba(185,137,103,.1);
+  color: var(--sage-dark);
+  border-color: var(--sage-dark);
+  cursor: default;
+}
+.cd-btn-cart:disabled { opacity: .7; }
 
 /* Beneficios */
 .cd-benefits {

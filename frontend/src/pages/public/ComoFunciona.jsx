@@ -40,7 +40,7 @@ const ComoFunciona = () => {
 
   const benefits = [
     { icon: <FiVideo />, title: 'Videos HD de calidad', desc: 'Clases grabadas con total nitidez para que veas cada detalle de cada movimiento.' },
-    { icon: <FiClock />, title: 'Acceso de por vida', desc: 'Aprendé a tu ritmo, sin presiones ni vencimientos. Tu clase para siempre.' },
+    { icon: <FiClock />, title: 'Acceso por 30 días', desc: 'Aprendé a tu ritmo durante 30 días desde la compra, con acceso completo a todo el contenido.' },
     { icon: <FiDownload />, title: 'Material descargable', desc: 'PDFs con secuencias y guías de ejercicios listas para imprimir.' },
     { icon: <FiMessageCircle />, title: 'Soporte directo', desc: 'Respondo todas tus dudas personalmente vía WhatsApp para que nunca te trabes en tu práctica.' },
     { icon: <FiUsers />, title: 'Comunidad activa', desc: 'Conectá con otras alumnas de Pilates, compartí tus logros y unite a nuestro grupo.' },
@@ -58,7 +58,7 @@ const ComoFunciona = () => {
     },
     {
       q: '¿Por cuánto tiempo tengo acceso a la clase?',
-      a: 'Para siempre. El acceso es de por vida: podés ver las clases cuantas veces quieras, a tu ritmo, sin ningún vencimiento.',
+      a: 'Por 30 días desde el momento de la compra. Durante ese período podés ver las clases cuantas veces quieras, a tu ritmo, en cualquier dispositivo.',
     },
     {
       q: '¿Puedo hacer consultas si tengo dudas mientras practico?',
@@ -209,7 +209,7 @@ const ComoFunciona = () => {
           </div>
           <div className="cf2-trust-item">
             <FiCheckCircle />
-            <span>Acceso de por vida</span>
+            <span>Acceso por 30 días</span>
           </div>
         </div>
       </section>
@@ -353,7 +353,7 @@ const ComoFunciona = () => {
             </Button>
           </Link>
           <p className="cf2-cta-disclaimer">
-            <FiCheckCircle /> Soporte por WhatsApp · Acceso de por vida · Guías PDF incluidas
+            <FiCheckCircle /> Soporte por WhatsApp · 30 días de acceso · Guías PDF incluidas
           </p>
         </div>
       </section>

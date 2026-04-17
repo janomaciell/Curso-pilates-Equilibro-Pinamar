@@ -20,7 +20,6 @@ export const usePayment = () => {
         console.log(`[Polling ${attempts}/${maxAttempts}] Consultando estado del pago...`);
 
         try {
-          // Consultar el estado de la preferencia
           const data = await paymentsAPI.checkPreferenceStatus(preferenceId);
 
           console.log('[Polling] Estado actual:', data.status);
@@ -35,7 +34,6 @@ export const usePayment = () => {
             clearInterval(pollingIntervalRef.current);
             resolve({ success: false, status: 'cancelled', data });
           }
-          // Si es 'pending', seguir haciendo polling
 
           if (attempts >= maxAttempts) {
             console.log('[Polling] Timeout alcanzado');
@@ -44,17 +42,16 @@ export const usePayment = () => {
           }
         } catch (err) {
           console.error('[Polling] Error:', err);
-          // Continuar el polling aunque haya un error
         }
       }, 3000); // Cada 3 segundos
     });
   };
 
-  const createPayment = async (claseId, options = {}) => {
-    // ⚠️ IMPORTANTE: window.open() debe llamarse ANTES de cualquier await,
-    // de lo contrario el navegador lo bloquea como popup no solicitado.
-    // Abrimos una ventana en blanco sincrónicamente al detectar el clic del usuario,
-    // y luego le asignamos la URL real cuando el backend nos la devuelva.
+  /**
+   * Utilidad interna para abrir popup de MP y esperar resultado.
+   * Usada tanto por createPayment como createCartPayment.
+   */
+  const _openMPFlow = async (paymentDataPromise, options = {}) => {
     let paymentWindow = null;
     if (options.openInPopup) {
       paymentWindow = window.open('about:blank', 'MercadoPago', 'width=800,height=600,scrollbars=yes');
@@ -64,32 +61,26 @@ export const usePayment = () => {
       setLoading(true);
       setError(null);
 
-      // 1. Crear la preferencia de pago en el backend
-      const paymentData = await paymentsAPI.createPayment(claseId);
+      const paymentData = await paymentDataPromise;
 
       console.log('[Payment] Preferencia creada:', paymentData);
 
-      // 2. URL de checkout: en modo sandbox (pruebas) usar siempre sandbox_init_point
       const paymentUrl = paymentData.sandbox
         ? (paymentData.sandbox_init_point || paymentData.init_point)
         : (paymentData.init_point || paymentData.sandbox_init_point);
 
       if (options.openInPopup) {
         if (paymentWindow && !paymentWindow.closed) {
-          // Redirigir la ventana ya abierta a la URL de pago
           paymentWindow.location.href = paymentUrl;
         } else {
-          // El popup fue bloqueado de todas formas → fallback: redirigir en la misma pestaña
           console.warn('[Payment] El popup fue bloqueado. Redirigiendo en la misma pestaña...');
           localStorage.setItem('pending_payment_preference_id', paymentData.preference_id);
           window.location.href = paymentUrl;
           return { success: true, data: paymentData };
         }
 
-        // 3. Iniciar polling mientras el usuario completa el pago
         const result = await pollPaymentStatus(paymentData.preference_id);
 
-        // 4. Cerrar popup si sigue abierto
         if (paymentWindow && !paymentWindow.closed) {
           paymentWindow.close();
         }
@@ -100,14 +91,12 @@ export const usePayment = () => {
           data: result.data || paymentData
         };
       } else {
-        // Redirigir en la misma ventana
         localStorage.setItem('pending_payment_preference_id', paymentData.preference_id);
         window.location.href = paymentUrl;
         return { success: true, data: paymentData };
       }
 
     } catch (err) {
-      // Si hubo un error y quedó una ventana abierta en blanco, cerrarla
       if (paymentWindow && !paymentWindow.closed) {
         paymentWindow.close();
       }
@@ -117,6 +106,26 @@ export const usePayment = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * Crear pago para una sola clase (mantiene compatibilidad)
+   */
+  const createPayment = async (claseId, options = {}) => {
+    return _openMPFlow(
+      paymentsAPI.createPayment([claseId]),
+      options
+    );
+  };
+
+  /**
+   * Crear pago del carrito con múltiples clases
+   */
+  const createCartPayment = async (claseIds, options = {}) => {
+    return _openMPFlow(
+      paymentsAPI.createPayment(claseIds),
+      options
+    );
   };
 
   /**
@@ -132,7 +141,6 @@ export const usePayment = () => {
     try {
       const data = await paymentsAPI.checkPreferenceStatus(preferenceId);
 
-      // Si ya se procesó, limpiar localStorage
       if (data.status !== 'pending') {
         localStorage.removeItem('pending_payment_preference_id');
       }
@@ -156,6 +164,7 @@ export const usePayment = () => {
 
   return {
     createPayment,
+    createCartPayment,
     checkPendingPayment,
     cancelPolling,
     loading,

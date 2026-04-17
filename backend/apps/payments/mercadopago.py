@@ -17,24 +17,40 @@ class MercadoPagoService:
             )
         self.sdk = mercadopago.SDK(token)
 
-    def create_preference(self, clase, user, return_url, notification_url):
+    def create_preference(self, clases, user, return_url, notification_url, cart_reference=None):
+        """Crear preferencia de pago en MP.
+
+        `clases` puede ser una sola instancia de Clase o una lista de instancias.
+        `cart_reference` es el UUID de la transacción (usado como external_reference).
+        """
         frontend_url = getattr(settings, 'FRONTEND_URL', '').strip()
         if frontend_url:
             base_url = frontend_url.rstrip('/')
         else:
             base_url = "http://localhost:5173"
-        
-        logger.info(f"[MP] Using base_url for back_urls: {base_url} (return_url ignored for back_urls)")
-        
+
+        # Normalizar a lista
+        if not isinstance(clases, (list, tuple)):
+            clases = [clases]
+
+        items = [
+            {
+                "title": c.title,
+                "quantity": 1,
+                "unit_price": float(c.price),
+                "currency_id": "ARS",
+            }
+            for c in clases
+        ]
+
+        # Construir external_reference con el UUID del carrito
+        ext_ref = f"user_{user.id}_cart_{cart_reference}" if cart_reference else \
+                  f"user_{user.id}_clase_{clases[0].id}"
+
+        logger.info(f"[MP] Using base_url for back_urls: {base_url}")
+
         preference_data = {
-            "items": [
-                {
-                    "title": clase.title,
-                    "quantity": 1,
-                    "unit_price": float(clase.price),
-                    "currency_id": "ARS",
-                }
-            ],
+            "items": items,
             "payer": {
                 "name": user.first_name or "Cliente",
                 "surname": user.last_name or "Sin apellido",
@@ -45,18 +61,24 @@ class MercadoPagoService:
                 "failure": f"{base_url}/payment-failure",
                 "pending": f"{base_url}/payment-pending",
             },
-            "auto_return": "approved",
             "notification_url": notification_url,
-            "statement_descriptor": "CLASE PILATES",
-            "external_reference": f"user_{user.id}_clase_{clase.id}",
+            "statement_descriptor": "EQUILIBRIO PINAMAR",
+            "external_reference": ext_ref,
             "metadata": {
                 "user_id": user.id,
-                "clase_id": clase.id,
+                "cart_reference": str(cart_reference) if cart_reference else None,
+                # Compatibilidad legacy para 1 sola clase
+                "clase_id": clases[0].id if len(clases) == 1 else None,
             }
         }
 
+        # MP rejects 'localhost' for auto_return endpoints
+        if "localhost" not in base_url and "127.0.0.1" not in base_url:
+            preference_data["auto_return"] = "approved"
+
         try:
-            logger.info(f"[MP] Creating preference for clase: {clase.title}")
+            titles = ", ".join([c.title for c in clases])
+            logger.info(f"[MP] Creating preference for clases: {titles}")
             logger.info(f"[MP] Notification URL: {notification_url}")
             logger.info(f"[MP] Back URLs: success={base_url}/payment-success, etc.")
             

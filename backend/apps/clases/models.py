@@ -9,8 +9,18 @@ class Clase(models.Model):
         ('advanced', 'Avanzado'),
     ]
 
+    CATEGORY_CHOICES = [
+        ('pilates-mat', 'Pilates Mat'),
+        ('stretching', 'Stretching'),
+        ('power-pilates', 'Power Pilates'),
+        ('power-workout', 'Power Workout'),
+        ('hipopresivos', 'Hipopresivos'),
+        ('fuerza', 'Fuerza'),
+    ]
+
     title = models.CharField('Título', max_length=200)
     slug = models.SlugField('Slug', max_length=200, unique=True)
+    category = models.CharField('Categoría', max_length=50, choices=CATEGORY_CHOICES, default='pilates-mat')
     description = models.TextField('Descripción')
     short_description = models.CharField('Descripción corta', max_length=300)
     cover_image = models.ImageField('Imagen de portada', upload_to='clases/covers/')

@@ -96,7 +96,7 @@ class ClaseListSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Clase
         fields = (
-            'id', 'title', 'slug', 'short_description', 'cover_image', 'price',
+            'id', 'title', 'slug', 'category', 'short_description', 'cover_image', 'price',
             'difficulty', 'duration_hours', 'total_lessons', 'total_students',
             'is_featured', 'created_at',
         )
@@ -117,7 +117,7 @@ class ClaseDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Clase
         fields = (
-            'id', 'title', 'slug', 'description', 'short_description', 'cover_image',
+            'id', 'title', 'slug', 'category', 'description', 'short_description', 'cover_image',
             'price', 'difficulty', 'duration_hours', 'modules', 'total_lessons',
             'total_students', 'is_featured', 'has_access', 'created_at',
         )

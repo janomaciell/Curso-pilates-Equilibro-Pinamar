@@ -54,6 +54,15 @@
   color: #fff;
 }
 
+.navbar--transparent .navbar-cart-btn {
+  color: rgba(255,255,255,0.85);
+}
+
+.navbar--transparent .navbar-cart-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.1);
+}
+
 
 .navbar-container {
   max-width: 1200px;
@@ -62,6 +71,53 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Agrupa carrito + toggle hamburguesa */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Botón carrito ── */
+.navbar-cart-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: #4a4540;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: color 0.25s, background 0.25s;
+}
+
+.navbar-cart-btn:hover {
+  color: #b98967;
+  background: rgba(185, 137, 103, 0.1);
+}
+
+.navbar-cart-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.2rem;
+  background: #b98967;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  border-radius: 50px;
+  pointer-events: none;
+  line-height: 1;
 }
 
 .navbar-logo {
@@ -262,6 +318,11 @@
 
   .navbar-container {
     padding: 1rem 1.25rem;
+  }
+
+  .navbar-cart-btn {
+    z-index: 1002;
+    position: relative;
   }
 
   .navbar-toggle {

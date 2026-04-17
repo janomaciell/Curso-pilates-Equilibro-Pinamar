@@ -65,7 +65,7 @@ const Register = () => {
   };
 
   const features = [
-    { icon: <FiClock />,  title: 'Acceso de por vida',  description: 'Aprendé a tu ritmo sin vencimientos' },
+    { icon: <FiClock />,  title: 'Acceso por 30 días',  description: 'Aprendé a tu ritmo durante 30 días' },
     { icon: <FiAward />,  title: 'Certificado incluido', description: 'Validá tus nuevas habilidades' },
     { icon: <FiShield />, title: 'Garantía 30 días',     description: 'Probá sin riesgo' },
   ];
